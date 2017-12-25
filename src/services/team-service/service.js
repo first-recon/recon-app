@@ -19,21 +19,22 @@ TeamService.prototype.getByNumber = function (number) {
 
 TeamService.prototype.get = function (params) {
   return this.teams.filter(params);
-    //.then((teams) => Promise.all(teams.map(format)));
 };
 
 TeamService.prototype.create = function (team) {
-  return this.getByNumber(team.number).then((foundTeam) => {
+  return this.getByNumber(team.number)
+    .then((foundTeam) => {
 
-    // FIXME: should be in the db/client file
-    return foundTeam ?
-      Promise.reject({ name: 'DbAddOpError', message: 'A team with that number already exists.' })
-      : this.teams.add(team);
-  });
+      // FIXME: should be in the db/client file
+      return foundTeam ?
+        Promise.reject({ name: 'DbAddOpError', message: 'A team with that number already exists.' })
+        : this.teams.add(team);
+    });
 };
 
 TeamService.prototype.update = function (number, newTeamData) {
-  return this.teams.update(this.getByNumber(number).id, newTeamData);
+  return this.getByNumber(number)
+    .then((team) => this.teams.update(team.id, newTeamData));
 };
 
 TeamService.prototype.delete = function (number) {

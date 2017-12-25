@@ -1,5 +1,7 @@
 import Collection from './collection';
 
+const gameConfig = require('../data/game-config');
+
 let instance;
 
 /**
@@ -9,15 +11,14 @@ let instance;
  */
 function Client () {
   if (!instance) {
-    const newMatchCollection = new Collection('matches.json', null);
-    const newTeamCollection = new Collection('teams.json', null);
-    const matchCollection = setupMatchCollection(newMatchCollection, newTeamCollection);
-    const tournamentCollection = new Collection('tournaments.json', require('../data/tournaments'));
-    const settingsCollection = new Collection('settings.json', require('../data/settings'));
+    const newMatchCollection = Collection('matches.json', []);
+    const newTeamCollection = Collection('teams.json', []);
+    const tournamentCollection = Collection('tournaments.json', require('../data/tournaments'));
+    const settingsCollection = Collection('settings.json', require('../data/settings'));
 
     instance = {
-      matchCollection: matchCollection,
-      teamCollection: setupTeamCollection(newTeamCollection, matchCollection),
+      matchCollection: setupMatchCollection(newMatchCollection, newTeamCollection, tournamentCollection),
+      teamCollection: setupTeamCollection(newTeamCollection, newMatchCollection),
       tournamentCollection: tournamentCollection,
       settingsCollection: settingsCollection
     };
@@ -33,9 +34,34 @@ function Client () {
 // TODO: bind setupMethod this to collection and change these override methods to arrow funcs?
 function setupTeamCollection (collection, matchCollection) {
   return {
-    getAll: collection.getAll.bind(collection),
+
+    getAll: (() => {
+      return Promise.all([
+        collection.getAll(),
+        matchCollection.getAll()
+      ])
+      .then(([teams, matches]) => {
+        return teams.map((team) => {
+          const teamWithMatches = team;
+          teamWithMatches.matches = matches.filter((m) => m.team === team.number);
+          return teamWithMatches;
+        });
+      });
+    }).bind(collection),
+
     getById: collection.getById.bind(collection),
-    find: collection.find.bind(collection),
+
+    find: ((findMethod) => {
+      return collection.find(findMethod)
+        .then((team) => {
+          const teamWithMatches = Object.assign({ matches: [] }, team);
+          return team ?
+            matchCollection.filter((m) => m.team === teamWithMatches.number)
+              .then((matches) => Object.assign({ matches }, teamWithMatches))
+            : Promise.resolve(null);
+        });
+    }).bind(collection),
+
     filter: collection.filter.bind(collection),
     add: collection.add.bind(collection),
     update: collection.update.bind(collection),
@@ -57,16 +83,66 @@ function setupTeamCollection (collection, matchCollection) {
     }).bind(collection),
 
     clear: collection.clear.bind(collection),
-    save: collection.save.bind(collection)
+    save: collection.save.bind(collection),
+    reload: collection.reload.bind(collection)
   };
 }
 
-function setupMatchCollection (collection, teamCollection) {
+function setupMatchCollection (collection, teamCollection, tournamentCollection) {
+  function format (match) {
+    return Promise.all([
+      tournamentCollection.getById(match.tournament),
+      teamCollection.filter({ number: match.team }).then(([team]) => team)
+    ])
+    .then(([tournament, team]) => {
+      return {
+        id: match.id,
+        team: team,
+        tournament: tournament || { id: -1, name: 'Unknown' },
+        number: match.number,
+  
+        // TODO: rename to code
+        matchId: match.matchId,
+        alliance: match.alliance,
+        comments: match.comments,
+        data: {
+          categories: match.data.categories.map((category) => {
+  
+            // get category with rule metadata from configuration
+            const categoryMetadata = gameConfig.categories.find((cat) => cat.name === category.name);
+  
+            // merge points for current match with rule metadata
+            category.rules = category.rules.map((rule, i) => {
+              const ruleMetadata = categoryMetadata.rules.find((ruleMData) => ruleMData.name === rule.name);
+              return Object.assign(rule, ruleMetadata);
+            });
+  
+            return category;
+          })
+        }
+      };
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  }
+
   return {
-    getAll: collection.getAll.bind(collection),
+    getAll: (() => {
+      return collection.getAll()
+        .then((matches) => {
+          return Promise.all(matches.map(format))
+        });
+    }).bind(collection),
+
     getById: collection.getById.bind(collection),
     find: collection.find.bind(collection),
-    filter: collection.filter.bind(collection),
+
+    filter: ((params) => {
+      return collection.filter(params).then((matches) => {
+        return Promise.all(matches.map(format));
+      })
+    }).bind(collection),
 
     add: ((match) => {
       if (match.number < 1) {
@@ -82,7 +158,8 @@ function setupMatchCollection (collection, teamCollection) {
     update: collection.update.bind(collection),
     remove: collection.remove.bind(collection),
     clear: collection.clear.bind(collection),
-    save: collection.save.bind(collection)
+    save: collection.save.bind(collection),
+    reload: collection.reload.bind(collection)
   };
 }
 

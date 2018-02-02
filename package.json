@@ -6,9 +6,9 @@
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "merge": "node scripts/merge-matches",
     "convert-to-text": "node scripts/convert-to-text",
-    "build:android": "cd android && gradlew assembleDebug && npm run build:android:rename",
+    "build:android": "cd android && ./gradlew assembleDebug && npm run build:android:rename",
     "build:android:rename": "rm -rf build/ && mkdir build && cd build && mkdir android && cd .. && mv android/app/build/outputs/apk/app-debug.apk build/android/great-scoutt.apk",
-    "build:android:release": "cd android && gradlew assembleRelease",
+    "build:android:release": "cd android && ./gradlew assembleRelease",
     "test": "jest"
   },
   "dependencies": {
@@ -16,7 +16,7 @@
     "react": "16.0.0",
     "react-native": "0.50.4",
     "react-native-camera": "https://github.com/lwansbrough/react-native-camera.git",
-    "react-native-filesystem-v1": "0.10.12",
+    "react-native-filesystem-v1": "https://github.com/first-recon/react-native-filesystem-v1.git",
     "react-native-svg": "6.0.1-rc.1",
     "react-native-svg-uri": "1.2.3",
     "react-navigation": "1.0.0-beta.21"

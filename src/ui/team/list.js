@@ -126,8 +126,7 @@ export default class TeamList extends Component {
     super(props);
 
     this.state = {
-      listSections: [],
-      filter: ''
+      listSections: []
     };
 
     // initialize action for refreshing team list
@@ -140,6 +139,8 @@ export default class TeamList extends Component {
 
   refresh (teamNumberString) {
     const self = this;
+
+    // TODO: filtering system is pretty inefficient, refactor to move all filtering logic to UI
     teamService.search(teamNumberString)
       .then((teams) => {
         this.setState({

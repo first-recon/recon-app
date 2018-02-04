@@ -17,6 +17,7 @@ import {
   AllianceToggle,
   Comments
 } from './components';
+import { refreshTeamList } from '../actions';
 import MatchService from '../../services/match-service';
 import TeamService from '../../services/team-service';
 import TournamentService from '../../services/tournament-service';
@@ -121,6 +122,7 @@ export default class MatchAdd extends Component {
 
     return matchService.create(matchToSave)
       .then(() => {
+        refreshTeamList();
         this.props.navigation.state.params.refresh();
         this.props.navigation.goBack();
       })

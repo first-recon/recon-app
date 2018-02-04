@@ -18,7 +18,20 @@ TeamService.prototype.getByNumber = function (number) {
 };
 
 TeamService.prototype.get = function (params) {
-  return this.teams.filter(params);
+  return this.teams.filter(params)
+    .then(teams => Promise.all(teams.map(format)));
+};
+
+TeamService.prototype.search = function (number) {
+  return this.teams.getAll()
+    .then((results) => {
+      if (!number) {
+        return results;
+      }
+      const filtered = results.filter(team => team.number.includes(number));
+      return filtered.length ? filtered : results;
+    })
+    .then(filteredTeams => filteredTeams.map(format));
 };
 
 TeamService.prototype.create = function (team) {

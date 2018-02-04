@@ -21,11 +21,20 @@ export function assertProps (actual, expected, path='root.') {
 
 let teamCounter = 0;
 
-export function createTeam (number) {
+export function createTeam (number, isTop, matches, timesDead, avgScores) {
   return {
     id: Date.now(),
     name: `Team ${teamCounter++}`,
-    number: number || `${Math.round(Math.random() * 20000)}`
+    number: number || `${Math.round(Math.random() * 20000)}`,
+    isTop: isTop || Math.random() % 2 === 0,
+    matches: matches || [],
+    timesDead: timesDead || 0,
+    averageScores: avgScores || {
+      autonomous: 0,
+      teleop: 0,
+      endGame: 0,
+      total: 0
+    }
   };
 }
 

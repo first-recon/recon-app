@@ -62,7 +62,17 @@ function setupTeamCollection (collection, matchCollection) {
         });
     }).bind(collection),
 
-    filter: collection.filter.bind(collection),
+    filter: ((params) => {
+      return collection.filter(params)
+        .then(teams => {
+          return Promise.all(teams.map(team => {
+            const teamWithMatches = Object.assign({ matches: [] }, team);
+            return matchCollection.filter((m) => m.team === teamWithMatches.number)
+                .then((matches) => Object.assign({ matches }, teamWithMatches));
+          }));
+        });
+    }).bind(collection),
+
     add: collection.add.bind(collection),
     update: collection.update.bind(collection),
 

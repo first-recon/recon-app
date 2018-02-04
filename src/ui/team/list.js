@@ -7,7 +7,8 @@ import {
   View,
   Alert,
   TouchableHighlight,
-  Dimensions
+  Dimensions,
+  TextInput
 } from 'react-native';
 
 import TeamService from '../../services/team-service';
@@ -136,9 +137,11 @@ export default class TeamList extends Component {
     this.refresh();
   }
 
-  refresh () {
+  refresh (teamNumberString) {
     const self = this;
-    teamService.getAll()
+
+    // TODO: filtering system is pretty inefficient, refactor to move all filtering logic to UI
+    teamService.search(teamNumberString)
       .then((teams) => {
         this.setState({
           listSections: teams && teams.reduce((sections, team, i) => createSections(sections, team, i, () => {
@@ -156,6 +159,7 @@ export default class TeamList extends Component {
           <Button title="Add Team" onPress={() =>
             this.props.navigation.navigate('TeamAddScreen', { refresh: this.refresh.bind(this) })}/>
         </View>
+        <TextInput placeholder="Filter by team number..." onChangeText={this.refresh.bind(this)}/>
         <FlatList
           style={{ padding: TILE_MARGIN }}
           data={this.state.listSections}

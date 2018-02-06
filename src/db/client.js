@@ -68,7 +68,7 @@ function setupTeamCollection (collection, matchCollection) {
           return Promise.all(teams.map(team => {
             const teamWithMatches = Object.assign({ matches: [] }, team);
             return matchCollection.filter((m) => m.team === teamWithMatches.number)
-                .then((matches) => Object.assign({ matches }, teamWithMatches));
+                .then((matches) => Object.assign({}, { matches }, teamWithMatches));
           }));
         });
     }).bind(collection),

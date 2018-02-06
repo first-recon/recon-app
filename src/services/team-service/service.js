@@ -28,8 +28,8 @@ TeamService.prototype.search = function (number) {
       if (!number) {
         return results;
       }
-      const filtered = results.filter(team => team.number.includes(number));
-      return filtered.length ? filtered : results;
+
+      return results.filter(team => team.number.includes(number));
     })
     .then(filteredTeams => filteredTeams.map(format));
 };

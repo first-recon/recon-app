@@ -5,7 +5,7 @@ export function empty (team) {
   return {
     team: team,
     tournament: 0,
-    number: 0,
+    number: 1,
     matchId: '',
     alliance: 'RED',
     comments: '',

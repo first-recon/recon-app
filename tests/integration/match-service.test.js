@@ -78,6 +78,30 @@ describe('Match Service', () => {
 
   });
 
+  describe('#create', () => {
+    const match1 = Object.assign({}, matchService.getEmptyMatch('8765'), { matchId: '0-1' });
+    beforeAll(() => {
+      matchService.matches.reload();
+      stubDatabases({
+        matches: [match1]
+      });
+    });
+
+    it('should not allow you to add a match that is already present', () => {
+      return matchService.create(match1)
+        .then((results) => assert.fail())
+        .catch((error) => {
+          assert.strictEqual(error.name, 'DbAddOpError', 'expected a DbAddOpError failure');
+        });
+    });
+
+    afterAll(() => {
+      matchService.matches.clear();
+      FileSystem.readFile.restore();
+    });
+
+  });
+
   describe('#delete', () => {
     const newMatch = Object.assign(matchService.getEmptyMatch('4318'), { number: 1 });
     let id = null;

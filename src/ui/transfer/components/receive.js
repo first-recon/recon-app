@@ -38,8 +38,8 @@ export default class Receive extends Component {
         <Text>{'Teams'}</Text>
         <Text>{this.state.teamData.map(t => t.split('|')[2])}</Text>
         <Text>{'Matches'}</Text>
-        {this.state.matchData.map(m => {
-          return (<Text>{`${m.split('|')[3]}`}</Text>);
+        {this.state.matchData.map((m, i) => {
+          return (<Text key={i}>{`${m.split('|')[3]}`}</Text>);
         })}
       </View>
     );
@@ -69,7 +69,7 @@ export default class Receive extends Component {
         Vibration.vibrate();
         refreshTeamList();
       })
-      .catch(error => Alert.alert('Error adding team', error.message));
+      .catch(error => console.log('ERROR:', error));
   }
 
   saveMatch (fields) {
@@ -79,7 +79,7 @@ export default class Receive extends Component {
         Vibration.vibrate();
         refreshTeamList();
       })
-      .catch(error => Alert.alert('Error adding match', error.message));
+      .catch(error => console.log('ERROR:', error));
   }
 
 }

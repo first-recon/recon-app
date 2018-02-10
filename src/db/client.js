@@ -122,12 +122,12 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
             const categoryMetadata = gameConfig.categories.find((cat) => cat.name === category.name);
   
             // merge points for current match with rule metadata
-            category.rules = category.rules.map((rule, i) => {
+            const newRules = category.rules.map((rule, i) => {
               const ruleMetadata = categoryMetadata.rules.find((ruleMData) => ruleMData.name === rule.name);
-              return Object.assign(rule, ruleMetadata);
+              return Object.assign({}, rule, ruleMetadata);
             });
   
-            return category;
+            return Object.assign({}, category, { rules: newRules });
           })
         }
       };
@@ -160,9 +160,16 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
           name: 'DbSchemaError',
           message: 'Match number must be greater than 0.'
         });
-      } else {
-        return collection.add(Object.assign(match, { matchId: `${match.tournament}-${match.number}` }));
       }
+
+      return collection.filter({ team: match.team, matchId: match.matchId })
+        .then((matches) => {
+          if (matches.length) {
+            return Promise.reject({ name: 'DbAddOpError', message: 'Match already exists in database.' });
+          }
+
+          return collection.add(Object.assign(match, { matchId: `${match.tournament}-${match.number}` }));
+        });
     }).bind(collection),
 
     update: collection.update.bind(collection),

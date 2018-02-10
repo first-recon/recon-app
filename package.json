@@ -1,6 +1,6 @@
 {
   "name": "Recon",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "private": true,
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",

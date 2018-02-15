@@ -1,5 +1,7 @@
 import Collection from './collection';
 
+import TeamModel from './models/team';
+
 const gameConfig = require('../data/game-config');
 
 let instance;
@@ -74,7 +76,10 @@ function setupTeamCollection (collection, matchCollection) {
     }).bind(collection),
 
     add: collection.add.bind(collection),
-    update: collection.update.bind(collection),
+
+    update: ((number, data) => {
+      return collection.update(number, (new TeamModel(data)).data);
+    }).bind(collection),
 
     // check if team is contained in any matches
     remove: ((teamId) => {

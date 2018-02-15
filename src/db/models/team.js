@@ -7,7 +7,8 @@ export default function Team (t) {
   this.data = {
     id: t.id,
     name: t.name,
-    number: t.number
+    number: t.number,
+    notes: t.notes || ''
   };
 
   this.getCSVHeaders = () => {

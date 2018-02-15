@@ -42,6 +42,7 @@ export function format (team) {
     name: team.name,
     number: team.number,
     matches: team.matches,
+    notes: team.notes,
     isTop: avgScores.total > 120,
     averageScores: avgScores,
     timesDead: numOfDead

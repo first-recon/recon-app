@@ -48,7 +48,7 @@ function Match ({ match, detailClicked, editClicked }) {
         <Text style={{ flex: 1, textAlign: 'left', fontSize: 36 }}>{`Match ${match.number}`}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={{ height: 45, alignItems: 'center', justifyContent: 'center' }} onPress={() => editClicked()}>
-        <Text style={{ paddingLeft: 10, paddingRight: 10, textAlign: 'center', color: 'white', fontSize: 36, backgroundColor: '#4286f4' }}>{'✏'}</Text>
+        <Text style={{ paddingLeft: 10, paddingRight: 10, textAlign: 'center', color: 'white', fontSize: 36, backgroundColor: '#4286f4' }}>{'🖊️'}</Text>
       </TouchableOpacity>
     </View>
   );

@@ -23,13 +23,31 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const teamService = new TeamService();
 
+const DetailRow = (({ label, value }) => {
+  return (
+    <View style={{ flexDirection: 'row' }}>
+      {label ? <Text style={{ fontSize: 18, fontWeight: 'bold', marginRight: 10 }}>{label}</Text> : null}
+      <Text style={{ fontSize: 18 }}>{value}</Text>
+    </View>
+  );
+});
+
+const DetailContainer = (({ title, children, fallback }) => {
+  return (
+    <View>
+      <Text style={{ fontWeight: 'bold', fontSize: 23 }}>{title}</Text>
+      {children}
+    </View>
+  );
+});
+
 export default class TeamDetail extends Component {
   static navigationOptions = ({ navigation }) => ({
-    title: navigation.state.params.name,
+    title: `${navigation.state.params.number} - ${navigation.state.params.name}`,
     headerRight: (
       <View style={{ flexDirection: 'row' }}>
-        {/* <Button style={{ flex: 1 }} title="Edit" onPress={() => navigation.navigate('TeamEditScreen', navigation.state.params)}/> */}
-        <Button style={{ flex: 1, color: 'red' }} title="Delete" onPress={() => {
+        <Button style={{ flex: 1 }} title="🖊️" onPress={() => navigation.navigate('TeamEditScreen', navigation.state.params)}/>
+        <Button style={{ flex: 1, color: 'red', marginLeft: 5 }} title="🗑️" onPress={() => {
           teamService.delete(navigation.state.params.number)
             .then((result) => {
               navigation.state.params.refresh();
@@ -77,9 +95,9 @@ export default class TeamDetail extends Component {
   // TODO: break Modal into seperate component
   render () {
     const team = this.props.navigation.state.params;
-    return (
-      <View style={{ flex: 1, flexDirection: 'column' }}>
-        <Modal
+
+    const qrModal = (
+      <Modal
           visible={this.state.modalVisible}
           animationType={'slide'}
           onRequestClose={() => this.toggleModal()}
@@ -100,7 +118,33 @@ export default class TeamDetail extends Component {
           </ScrollView>
         </View>
         </Modal>
+    );
+
+    const details = (
+      <View>
+        <DetailRow label={'Auto'} value={team.averageScores.autonomous}/>
+        <DetailRow label={'Teleop'} value={team.averageScores.teleop}/>
+        <DetailRow label={'End Game'} value={team.averageScores.endGame}/>
+        <DetailRow label={'Total'} value={team.averageScores.total}/>
+      </View>
+    );
+
+    const teamDetails = (
+      <View>
+        <DetailContainer title="Performance">
+          {team.matches.length ? details : <Text>{'No data :('}</Text>}
+        </DetailContainer>
+        <DetailContainer title="Notes">
+          {team.notes ? <Text style={{ fontSize: 18 }}>{team.notes}</Text> : <Text>{'No notes :('}</Text>}
+        </DetailContainer>
+      </View>
+    );
+
+    return (
+      <View style={{ flex: 1, flexDirection: 'column' }}>
+        {qrModal}
         <Button title="Share" onPress={() => this.toggleModal()}/>
+        {teamDetails}
         <View style={{ flex: 2 }}>
           <MatchList team={team} navigation={this.props.navigation}/>
         </View>

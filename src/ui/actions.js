@@ -10,8 +10,8 @@ export function initRefreshTeamList (refreshFunc) {
   refreshTeamListFunc = refreshFunc;
 }
 
-export function refreshTeamList () {
-  return refreshTeamListFunc();
+export function refreshTeamList (sort) {
+  return refreshTeamListFunc(sort);
 }
 
 // TEAM DETAIL REFRESH

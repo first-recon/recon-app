@@ -22,18 +22,6 @@ TeamService.prototype.get = function (params) {
     .then(teams => Promise.all(teams.map(format)));
 };
 
-TeamService.prototype.search = function (number) {
-  return this.teams.getAll()
-    .then((results) => {
-      if (!number) {
-        return results;
-      }
-
-      return results.filter(team => team.number.includes(number));
-    })
-    .then(filteredTeams => filteredTeams.map(format));
-};
-
 TeamService.prototype.create = function (team) {
   return this.getByNumber(team.number)
     .then((foundTeam) => {

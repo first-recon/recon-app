@@ -8,13 +8,14 @@ import {
   Alert,
   TouchableHighlight,
   Dimensions,
+  Picker,
   TextInput
 } from 'react-native';
 
 import TeamService from '../../services/team-service';
 import MatchService from '../../services/match-service';
 
-import { initTeamListRefresh, initRefreshTeamList } from '../actions';
+import { initRefreshTeamList } from '../actions';
 
 import globalStyle from '../global.style.js';
 import style from './list.style';
@@ -35,6 +36,13 @@ const NUM_OF_TILES = (() => {
 })();
 const TILE_MARGIN = (SCREEN_WIDTH) * 0.02;
 const TILE_SIZE = ((SCREEN_WIDTH - TILE_MARGIN) / NUM_OF_TILES) - TILE_MARGIN;
+
+const SORT_OPTIONS = {
+  TOTAL: 0,
+  AUTONOMOUS: 1,
+  TELEOP: 2,
+  ENDGAME: 3
+}
 
 function DataRow ({ label, data }) {
   return (
@@ -87,6 +95,14 @@ function Team ({ index, team, clickHandler }) {
   );
 }
 
+function SortPicker ({ selectedValue, onValueChange }) {
+  return (
+    <Picker style={{ flex: 1 }} selectedValue={selectedValue} onValueChange={onValueChange}>
+      {Object.keys(SORT_OPTIONS).map((key, i) => <Picker.Item key={i} label={key} value={SORT_OPTIONS[key]}/>)}
+    </Picker>
+  );
+}
+
 function createSections (sections, team, i, clickHandler) {
   const lastSection = sections[sections.length - 1];
 
@@ -126,52 +142,83 @@ export default class TeamList extends Component {
     super(props);
 
     this.state = {
-      listSections: []
+      teams: [],
+      filter: '',
+      sort: SORT_OPTIONS.TOTAL
     };
 
     // initialize action for refreshing team list
     initRefreshTeamList(() => this.refresh());
   }
 
-  componentWillMount() {
+  componentWillMount () {
     this.refresh();
   }
 
-  refresh (teamNumberString) {
-    const self = this;
+  refresh () {
 
     // TODO: filtering system is pretty inefficient, refactor to move all filtering logic to UI
-    teamService.search(teamNumberString)
+    teamService.getAll()
       .then((teams) => {
-        this.setState({
-          listSections: teams && teams.reduce((sections, team, i) => createSections(sections, team, i, () => {
-            this.props.navigation.navigate('TeamDetailScreen', { ...team, refresh: this.refresh.bind(self) });
-          }), [])
-        });
+        this.setState({ teams });
       })
       .catch((error) => Alert.alert('Error :-(', error.message));
   }
 
+
+
   render () {
+
+    // apply filter
+    const filtered = this.state.teams.filter((t) => t.number.includes(this.state.filter));
+
+    // sort
+    filtered.sort(({ averageScores: a }, { averageScores: b }) => {
+      switch (this.state.sort) {
+        case SORT_OPTIONS.AUTONOMOUS:
+          return b.autonomous - a.autonomous;
+        case SORT_OPTIONS.TELEOP:
+          return b.teleop - a.teleop;
+        case SORT_OPTIONS.ENDGAME:
+          return b.endGame - a.endGame;
+        case SORT_OPTIONS.TOTAL:
+        default:
+          return b.total - a.total;
+      }
+    });
+
+    const grouped = filtered.reduce((sections, team, i) => {
+      return createSections(sections, team, i, () => {
+        this.props.navigation.navigate('TeamDetailScreen', { ...team, refresh: () => this.refresh() });
+      });
+    }, []);
+
+    const teamList = (
+      <FlatList
+        style={{ padding: TILE_MARGIN }}
+        data={grouped}
+        renderItem={({ index, item: section }) => {
+          return (
+            <View key={index} style={{ flex: 1, flexDirection: 'row', marginBottom: TILE_MARGIN }}>
+              {section.teams}
+            </View>
+          );
+        }}
+        keyExtractor={(item, index) => index}
+      />
+    );
+
     return (
       <View>
         <View>
           <Button title="Add Team" onPress={() =>
             this.props.navigation.navigate('TeamAddScreen', { refresh: this.refresh.bind(this) })}/>
         </View>
-        <TextInput placeholder="Filter by team number..." onChangeText={this.refresh.bind(this)}/>
-        <FlatList
-          style={{ padding: TILE_MARGIN }}
-          data={this.state.listSections}
-          renderItem={({ index, item: section }) => {
-            return (
-              <View key={index} style={{ flex: 1, flexDirection: 'row', marginBottom: TILE_MARGIN }}>
-                {section.teams}
-              </View>
-            );
-          }}
-          keyExtractor={(item, index) => index}
-        />
+        <View style={{ flexDirection: 'row' }}>
+          <TextInput style={{ flex: 8 }} placeholder="Filter by team number..." onChangeText={filter => this.setState({ filter })}/>
+          <SortPicker selectedValue={this.state.sort} onValueChange={sort => this.setState({ sort })}/>
+        </View>
+        {teamList}
       </View>
     );
   }

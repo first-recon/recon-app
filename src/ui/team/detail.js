@@ -46,8 +46,8 @@ export default class TeamDetail extends Component {
     title: `${navigation.state.params.number} - ${navigation.state.params.name}`,
     headerRight: (
       <View style={{ flexDirection: 'row' }}>
-        <Button style={{ flex: 1 }} title="🖊️" onPress={() => navigation.navigate('TeamEditScreen', navigation.state.params)}/>
-        <Button style={{ flex: 1, color: 'red', marginLeft: 5 }} title="🗑️" onPress={() => {
+        <Button style={{ flex: 1 }} title="Edit" onPress={() => navigation.navigate('TeamEditScreen', navigation.state.params)}/>
+        <Button style={{ flex: 1, color: 'red', marginLeft: 5 }} title="Delete" onPress={() => {
           teamService.delete(navigation.state.params.number)
             .then((result) => {
               navigation.state.params.refresh();

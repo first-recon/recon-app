@@ -26,8 +26,9 @@ export default function Collection (path='', initData=[], autoSave=false) {
     }
   
     // if our data object is not initialized, do so
-    if (self.data === null) {
+    if (!self.data) {
       loading[path] = true;
+      console.log(path, initData, typeof initData);
       return FileSystem.readFile(path, FileSystem.storage.extBackedUp)
         .then((rawText) => {
           try {
@@ -46,7 +47,19 @@ export default function Collection (path='', initData=[], autoSave=false) {
           return self.data;
         })
         .catch((error) => {
-          self.data = initData;
+          if (typeof initData === 'string') {
+            return fetch(initData)
+              .then((res) => res.json())
+              .then((response) => {
+                self.data = response;
+                this.save(); // async but we don't care about waiting for it to finish
+                loading[path] = false;
+                return self.data;
+              });
+          } else {
+            self.data = initData;
+          }
+          
           return this.save().then(() => {
             loading[path] = false;
             return Promise.resolve(self.data);
@@ -56,7 +69,7 @@ export default function Collection (path='', initData=[], autoSave=false) {
 
     return Promise.resolve(self.data);
   }
-
+ 
   this.getAll = () => {
     return this.getData();
   }

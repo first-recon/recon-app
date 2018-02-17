@@ -15,7 +15,7 @@ function Client () {
   if (!instance) {
     const newMatchCollection = new Collection('matches.json', []);
     const newTeamCollection = new Collection('teams.json', []);
-    const tournamentCollection = new Collection('tournaments.json', require('../data/tournaments'));
+    const tournamentCollection = new Collection('tournaments.json', 'http://159.203.141.59:30001/');
     const settingsCollection = new Collection('settings.json', require('../data/settings'));
 
     instance = {

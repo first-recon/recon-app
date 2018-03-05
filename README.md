@@ -11,3 +11,6 @@ This is the source code for the Recon FTC scouting app. Below you'll find all ki
 6. Install the React Native command line tools `npm install -g react-native-cli`.
 7. Install Yarn `npm install -g yarn`.
 8. Install application dependencies `yarn install`.
+
+### Building and Running
+To automatically build and download to a connected android device, just run `react-native run-android`. Note that you should have only 1 android device plugged in when you execute this command (this includes the android emulator).

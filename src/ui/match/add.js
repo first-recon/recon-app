@@ -94,7 +94,7 @@ export default class MatchAdd extends Component {
                       if (value > 0) {
                         rule.points += rule.increment;
                       } else if (value < 0) {
-                        if (rule.points != 0) {
+                        if (rule.points > 0) {
                           rule.points -= rule.increment;
                         }
                       }

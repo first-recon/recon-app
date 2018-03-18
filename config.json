@@ -1,3 +1,6 @@
 {
-    "csvDelimiter": "|"
+    "csvDelimiter": "|" ,
+    "api": {
+        "eventURL": "http://api.firstrecon.tech/events"
+    }
 }

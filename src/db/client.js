@@ -4,6 +4,8 @@ import TeamModel from './models/team';
 
 const gameConfig = require('../data/game-config');
 
+const config = require('../../config');
+
 let instance;
 
 /**
@@ -15,7 +17,7 @@ function Client () {
   if (!instance) {
     const newMatchCollection = new Collection('matches.json', []);
     const newTeamCollection = new Collection('teams.json', []);
-    const tournamentCollection = new Collection('tournaments.json', 'http://159.203.141.59:30001/');
+    const tournamentCollection = new Collection('tournaments.json', config.apis.event.url);
     const settingsCollection = new Collection('settings.json', require('../data/settings'));
 
     instance = {

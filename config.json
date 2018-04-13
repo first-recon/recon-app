@@ -1,6 +1,8 @@
 {
     "csvDelimiter": "|" ,
-    "api": {
-        "eventURL": "http://api.firstrecon.tech/events"
+    "apis": {
+        "event": {
+            "url": "http://api.firstrecon.tech/events"
+        }
     }
 }

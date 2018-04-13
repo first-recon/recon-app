@@ -17,7 +17,7 @@ function Client () {
   if (!instance) {
     const newMatchCollection = new Collection('matches.json', []);
     const newTeamCollection = new Collection('teams.json', []);
-    const tournamentCollection = new Collection('tournaments.json', config.api.eventURL);
+    const tournamentCollection = new Collection('tournaments.json', config.apis.event.url);
     const settingsCollection = new Collection('settings.json', require('../data/settings'));
 
     instance = {

@@ -29,7 +29,7 @@ export default function Collection (path='', initData=[], autoSave=false) {
     if (!self.data) {
       loading[path] = true;
       console.log(path, initData, typeof initData);
-      return FileSystem.readFile(path, FileSystem.storage.backedUp)
+      return FileSystem.readFile(path, FileSystem.storage.extBackedUp)
         .then((rawText) => {
           try {
             const d = JSON.parse(rawText);

@@ -1,3 +1,4 @@
 import TournamentPicker from './tournament-picker';
+import TournamentEntry from './tournament-entry';
 
-export { TournamentPicker };
+export { TournamentPicker, TournamentEntry };

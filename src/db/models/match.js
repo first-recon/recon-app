@@ -12,6 +12,7 @@ function Match (m, config=gameConfig) {
     matchId: m.matchId,
     alliance: m.alliance,
     comments: m.comments,
+    uploaded: m.uploaded || false,
     data: {
       categories: gameConfig.categories.map((category) => {
 

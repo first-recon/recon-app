@@ -9,6 +9,7 @@ export function empty (team) {
     matchId: '',
     alliance: 'RED',
     comments: '',
+    uploaded: false,
     data: {
       categories: gameConfig.categories.map((category) => {
 

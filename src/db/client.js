@@ -122,6 +122,7 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
         matchId: match.matchId,
         alliance: match.alliance,
         comments: match.comments,
+        uploaded: match.uploaded,
         data: {
           categories: match.data.categories.map((category) => {
   

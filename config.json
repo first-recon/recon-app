@@ -3,6 +3,9 @@
     "apis": {
         "event": {
             "url": "http://api.firstrecon.tech/events"
+        },
+        "match": {
+            "url": "http://api.firstrecon.tech/matches"
         }
     }
 }

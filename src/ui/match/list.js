@@ -5,7 +5,8 @@ import {
   View,
   Button,
   TouchableOpacity,
-  Alert
+  Alert,
+  ScrollView
 } from 'react-native';
 import TournamentService from '../../services/tournament-service';
 import TeamService from '../../services/team-service/service';
@@ -97,7 +98,9 @@ export default class MatchList extends Component {
     return (
       <View style={{ flex: 1 }}>
         <Button title="Add Match" onPress={() => {this.props.navigation.navigate('MatchAddScreen', { team: this.props.team, refresh: this.refresh.bind(this) })}}/>
-        {this.state.renderedMatchList}
+        <ScrollView>
+          {this.state.renderedMatchList}
+        </ScrollView>
       </View>
     );
   }

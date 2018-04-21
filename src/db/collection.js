@@ -98,7 +98,7 @@ export default function Collection (path='', initData=[], autoSave=false) {
     }
 
     return this.getData()
-      .then((data) => data.filter((item) => hasValues(params, item)));d
+      .then((data) => data.filter((item) => hasValues(params, item)));
   }
 
   this.add = (item) => {

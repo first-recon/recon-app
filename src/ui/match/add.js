@@ -24,6 +24,7 @@ import MatchService from '../../services/match-service';
 import TeamService from '../../services/team-service';
 import TournamentService from '../../services/tournament-service';
 import SettingsService from '../../services/settings-service';
+import { deepClone } from '../../utils';
 
 const matchService = new MatchService();
 const teamService = new TeamService();
@@ -95,13 +96,13 @@ export default class MatchAdd extends Component {
   }
 
   updateBlockValue (boxIdx, colIdx, blockIdx) {
-    const cryptoboxes = JSON.parse(JSON.stringify(this.state.cryptoboxes));
+    const cryptoboxes = deepClone(this.state.cryptoboxes);
     cryptoboxes[boxIdx][colIdx][blockIdx] = getNextBlock(cryptoboxes[boxIdx][colIdx][blockIdx]);
     this.setState({ cryptoboxes });
   }
 
   updateRelics (zoneIdx, isUpright, step) {
-    const updated = JSON.parse(JSON.stringify(this.state.relicZones));
+    const updated = deepClone(this.state.relicZones);
     if (isUpright) {
       updated[zoneIdx].upright += step;
     } else {

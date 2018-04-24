@@ -1,4 +1,5 @@
 import FileSystem from 'react-native-filesystem-v1';
+import { deepClone } from '../utils';
 
 let loading = {};
 
@@ -107,7 +108,7 @@ export default function Collection (path='', initData=[], autoSave=false) {
     itemWithId.id = Date.now();
     return this.getData()
       .then((data) => {
-        self.data = JSON.parse(JSON.stringify(data.concat(itemWithId)));
+        self.data = deepClone(data.concat(itemWithId));
         return this.save();
       })
       .then(() => itemWithId);
@@ -132,7 +133,7 @@ export default function Collection (path='', initData=[], autoSave=false) {
         }
         const currentItem = data[currentItemIndex];
         data[currentItemIndex] = Object.assign({}, currentItem, modifiedFields);
-        self.data = JSON.parse(JSON.stringify(data));
+        self.data = deepClone(data);
         return this.save();
       });
   }

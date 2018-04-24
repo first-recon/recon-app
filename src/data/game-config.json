@@ -1,84 +1,82 @@
 {
-  "categories": [
+  "rules": [
     {
-      "name": "Autonomous",
-      "rules": [
-        {
-          "name": "Alliance-specific Jewel remaining on platform",
-          "type": "boolean",
-          "value": 30
-        },
-        {
-          "name": "Glyph scored in Cryptobox",
-          "type": "number",
-          "increment": 15
-        },
-        {
-          "name": "Glyph bonus for Cryptobox Key column",
-          "type": "boolean",
-          "value": 30
-        },
-        {
-          "name": "Robot parked in Safe Zone",
-          "type": "boolean",
-          "value": 10
-        }
-      ]
+      "period": "autonomous",
+      "name": "Alliance-specific Jewel remaining on platform",
+      "type": "boolean",
+      "value": 30
     },
     {
-      "name": "TeleOp",
-      "rules": [
-        {
-          "name": "Glyph scored in Cryptobox",
-          "type": "number",
-          "increment": 2
-        },
-        {
-          "name": "Completed row of 3 in Cryptobox",
-          "type": "number",
-          "increment": 10
-        },
-        {
-          "name": "Completed column of 4 in Cryptobox",
-          "type": "number",
-          "increment": 20
-        },
-        {
-          "name": "Completed Cipher",
-          "type": "number",
-          "increment": 30
-        }
-      ]
+      "period": "autonomous",      
+      "name": "Auto Glyph scored in Cryptobox",
+      "type": "number",
+      "value": 15
     },
     {
-      "name": "End Game",
-      "rules": [
-        {
-          "name": "Relic in Recovery Zone #1",
-          "type": "boolean",
-          "value": 10
-        },
-        {
-          "name": "Relic in Recovery Zone #2",
-          "type": "boolean",
-          "value": 20
-        },
-        {
-          "name": "Relic in Recovery Zone #3",
-          "type": "boolean",
-          "value": 40
-        },
-        {
-          "name": "Bonus for keeping Relic upright",
-          "type": "boolean",
-          "value": 15
-        },
-        {
-          "name": "Robot balanced on Balancing Stone",
-          "type": "boolean",
-          "value": 20
-        }
-      ]
+      "period": "autonomous",      
+      "name": "Glyph bonus for Cryptobox Key column",
+      "type": "boolean",
+      "value": 30
+    },
+    {
+      "period": "autonomous",      
+      "name": "Robot parked in Safe Zone",
+      "type": "boolean",
+      "value": 10
+    },
+    {
+      "period": "teleop",      
+      "name": "Glyph scored in Cryptobox",
+      "type": "number",
+      "value": 2
+    },
+    {
+      "period": "teleop",      
+      "name": "Completed row of 3 in Cryptobox",
+      "type": "number",
+      "value": 10
+    },
+    {
+      "period": "teleop",      
+      "name": "Completed column of 4 in Cryptobox",
+      "type": "number",
+      "value": 20
+    },
+    {
+      "period": "teleop",      
+      "name": "Completed Cipher",
+      "type": "number",
+      "value": 30
+    },
+    {
+      "period": "endgame",
+      "name": "Relic in Recovery Zone #1",
+      "type": "number",
+      "value": 10
+    },
+    {
+      "period": "endgame",
+      "name": "Relic in Recovery Zone #2",
+      "type": "number",
+      "value": 20
+    },
+    {
+      "period": "endgame",
+      "name": "Relic in Recovery Zone #3",
+      "type": "number",
+      "value": 40
+    },
+    {
+      "period": "endgame",
+      "name": "Bonus for keeping Relic upright",
+      "type": "number",
+      "value": 15
+    },
+    {
+      "period": "endgame",
+      "name": "Robot balanced on Balancing Stone",
+      "type": "boolean",
+      "value": 20
     }
   ]
 }

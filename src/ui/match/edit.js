@@ -5,12 +5,41 @@ import {
   Switch,
   TextInput,
   Button,
-  Alert
+  Alert,
+  ScrollView
 } from 'react-native';
-import { Category } from './components';
+import { TextCheck, IncrementingNumber } from './components';
 import MatchService from '../../services/match-service';
 
 const matchService = new MatchService();
+
+function Category ({ name, rules, updateRule }) {
+  return (
+    <View>
+      <Text style={{ fontSize: 20, textAlign: 'center' }}>{name}</Text>
+      {rules.map((rule, i) => {
+        return (
+          <View key={i} style={{ marginBottom: 10, height: 50 }}>
+            {rule.type === 'number' ?
+              <IncrementingNumber
+                label={rule.name}
+                value={rule.points}
+                increment={rule.value}
+                onIncrement={(value) => updateRule(rule.name, value)}
+              /> :
+              <TextCheck
+                label={rule.name}
+                labelOn="Yes"
+                labelOff="No"
+                value={rule.points > 0}
+                onToggle={(value) => updateRule(rule.name, !rule.points)}
+              />}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 export default class MatchEdit extends Component {
   constructor (props) {
@@ -20,70 +49,50 @@ export default class MatchEdit extends Component {
     };
   }
 
-  /**
-   * cat   - category to edit (Auto, Teleop, Endgame...)
-   * name  - name of rule to edit
-   * type  - type of rule (boolean, number, etc...)
-   * value - new value entered in ui
-   */
-  updateRule (cat, name, type, value) {
+  updateRule (name, points) {
     this.setState({
       data: {
-        categories: this.state.data.categories.map((category) => {
+        rules: this.state.data.rules.map((rule) => {
 
-          // this is the category containeing the rule we want to edit
-          if (category.name === cat.name) {
-            category.rules = category.rules.map((rule) => {
+          // this is the rule we are editing
+          if (rule.name === name) {
 
-              // this is the rule we are editing
-              if (rule.name === name) {
+            // depending on the type of rule this is, either map a boolean
+            // to a point value or just put the value into the current state
+            switch (rule.type) {
+              case 'boolean':
+                rule.points = points ? rule.value : 0;
+                break;
+              case 'number':
+                if (rule.value) {
 
-                // depending on the type of rule this is, either map a boolean
-                // to a point value or just put the value into the current state
-                switch (type) {
-                  case 'boolean':
-                    rule.points = value ? rule.value : 0;
-                    break;
-                  case 'number':
-                    if (rule.increment) {
-
-                      /**
-                       * TODO: Passing in a positive number will increment by the
-                       * amount set for this rule in the gameConfig. Negative
-                       * will decrement. Should probably make this less awful
-                       * but nothing is coming to mind atm. Also the fact that
-                       * this page is so dynamic makes this a little more
-                       * interesting.
-                       */
-                      if (value > 0) {
-                        rule.points += rule.increment;
-                      } else if (value < 0) {
-                        rule.points -= rule.increment;
-                      }
-                    } else {
-                      rule.points = value;
-                    }
+                  /**
+                   * TODO: Passing in a positive number will increment by the
+                   * amount set for this rule in the gameConfig. Negative
+                   * will decrement. Should probably make this less awful
+                   * but nothing is coming to mind atm. Also the fact that
+                   * this page is so dynamic makes this a little more
+                   * interesting.
+                   */
+                  if (points > 0) {
+                    rule.points += rule.value;
+                  } else if (points < 0) {
+                    rule.points -= rule.value;
+                  }
+                } else {
+                  rule.points = points;
                 }
-              }
-
-              return rule;
-            });
+            }
           }
 
-          return category;
+          return rule;
         })
       }
     });
 
     matchService.update(this.state.id, {
       data: {
-        categories: this.state.data.categories.map((category) => ({
-          name: category.name,
-          rules: category.rules.map((rule) => ({
-            name: rule.name,
-            points: rule.points
-          }))
-        }))
+        rules: this.state.data.rules
       }
     })
     .catch((error) => {
@@ -92,18 +101,28 @@ export default class MatchEdit extends Component {
   }
 
   render () {
-    const categories = this.state.data.categories
-      .map((category, i) => (
-        <Category
-          match={this.state}
-          category={category}
-          key={i}
-          fieldUpdated={(name, type, value) => this.updateRule(category, name, type, value)}/>
-        ));
+    const rules = this.state.data.rules;
+    const autonomous = rules.filter(r => r.period === 'autonomous');
+    const teleop = rules.filter(r => r.period === 'teleop');
+    const endgame = rules.filter(r => r.period === 'endgame');
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
-        {categories}
-      </View>
+      <ScrollView style={{flex: 1, padding: 10}}>
+        <Category
+          name={'Autonomous'}
+          rules={autonomous}
+          updateRule={this.updateRule.bind(this)}
+        />
+        <Category
+          name={'TeleOp'}
+          rules={teleop}
+          updateRule={this.updateRule.bind(this)}
+        />
+        <Category
+          name={'End Game'}
+          rules={endgame}
+          updateRule={this.updateRule.bind(this)}
+        />
+      </ScrollView>
     );
   }
 }

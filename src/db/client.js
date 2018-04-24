@@ -72,7 +72,7 @@ function setupTeamCollection (collection, matchCollection) {
           return Promise.all(teams.map(team => {
             const teamWithMatches = Object.assign({ matches: [] }, team);
             return matchCollection.filter((m) => m.team === teamWithMatches.number)
-                .then((matches) => Object.assign({}, { matches }, teamWithMatches));
+              .then((matches) => Object.assign({}, { matches }, teamWithMatches));
           }));
         });
     }).bind(collection),
@@ -117,27 +117,13 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
         team: team,
         tournament: tournament || { id: -1, name: 'Unknown' },
         number: match.number,
-  
+
         // TODO: rename to code
         matchId: match.matchId,
         alliance: match.alliance,
         comments: match.comments,
         uploaded: match.uploaded,
-        data: {
-          categories: match.data.categories.map((category) => {
-  
-            // get category with rule metadata from configuration
-            const categoryMetadata = gameConfig.categories.find((cat) => cat.name === category.name);
-  
-            // merge points for current match with rule metadata
-            const newRules = category.rules.map((rule, i) => {
-              const ruleMetadata = categoryMetadata.rules.find((ruleMData) => ruleMData.name === rule.name);
-              return Object.assign({}, rule, ruleMetadata);
-            });
-  
-            return Object.assign({}, category, { rules: newRules });
-          })
-        }
+        data: match.data
       };
     })
     .catch((error) => {
@@ -170,10 +156,10 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
         });
       }
 
-      return collection.filter({ team: match.team, matchId: match.matchId })
+      return collection.filter({ team: match.team, tournament: match.tournament, number: match.number })
         .then((matches) => {
           if (matches.length) {
-            return Promise.reject({ name: 'DbAddOpError', message: 'Match already exists in database.' });
+            return Promise.reject({ name: 'DbAddOpError', message: 'Match already exists.' });
           }
 
           return collection.add(Object.assign(match, { matchId: `${match.tournament}-${match.number}` }));

@@ -34,33 +34,7 @@ MatchService.prototype.create = function (match) {
     return Promise.reject({ name: 'RequiredFieldError', message: 'Please provide a match number.' });
   }
 
-  return this.matches.add(match)
-    .then((added) => {
-      const matchToUpload = {
-        id: added.id,
-        team: added.team,
-        matchId: added.matchId,
-        timeStamp: added.id, // TODO: save this timestamp at creation
-        alliance: added.alliance,
-        data: JSON.stringify(added.data)
-      };
-      fetch(config.apis.match.url, {
-        method: 'POST',
-        body: JSON.stringify(matchToUpload),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(response => {
-        if (response.status === 200) {
-          this.matches.update(added.id, Object.assign({}, added, { uploaded: true }));
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    });
+  return this.matches.add(match);
 };
 
 MatchService.prototype.update = function (id, newMatchData) {

@@ -7,5 +7,10 @@
         "match": {
             "url": "http://api.firstrecon.tech/matches"
         }
+    },
+    "scheduledTasks": {
+        "matchUpload": {
+            "interval": 60000
+        }
     }
 }

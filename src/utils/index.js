@@ -1,6 +1,11 @@
 import assert from 'assert';
 import sinon from 'sinon';
 
+// i hate JS
+export function deepClone (object) {
+  return JSON.parse(JSON.stringify(object));
+}
+
 export function assertProps (actual, expected, path='root.') {
   const actualProps = Object.keys(actual).sort();
   const expectedProps = Object.keys(expected).sort();

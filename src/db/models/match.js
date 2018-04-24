@@ -14,21 +14,7 @@ function Match (m, config=gameConfig) {
     comments: m.comments,
     uploaded: m.uploaded || false,
     data: {
-      categories: gameConfig.categories.map((category) => {
-
-        const matchCategory = m.data.categories.find((cat) => cat.name === category.name);
-
-        // merge points for current match with rule metadata
-        return {
-          rules: category.rules.map((rule, i) => {
-            const matchRule = matchCategory.rules.find((ruleMData) => ruleMData.name === rule.name);
-            return {
-              name: matchRule.name,
-              points: matchRule.points || 0
-            };
-          })
-        };
-      })
+      rules: m.data.rules
     }
   };
 
@@ -38,9 +24,7 @@ function Match (m, config=gameConfig) {
       return Object.keys(match).map((key) => {
         const value = match[key];
         if (key === 'data') {
-          const t = match.data.categories.map((cat) => 
-            cat.rules.map(rule => rule.points).join(csvDelimiter)
-          ).join(csvDelimiter);
+          const t = match.data.rules.map(r => r.points).join(csvDelimiter);
           return t;
         } else if (key === 'comments') {
           return value;
@@ -70,9 +54,7 @@ Match.getCSVHeaders = () => {
     return Object.keys(match).map((key) => {
       const childKey = Object.keys(match[key]);
       if (key === 'data') {
-        return match.data.categories.map((cat) =>
-          cat.rules.map((rule) => rule.name).join(csvDelimiter)
-        ).join(csvDelimiter);
+        return match.data.rules.map(r => r.name).join(csvDelimiter);
       } else {
         return key;
       }

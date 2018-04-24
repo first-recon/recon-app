@@ -1,0 +1,29 @@
+[
+    {
+        "name": "frog",
+        "pattern": [
+            false, true, false,
+            true, false, true,
+            false, true, false,
+            true, false, true 
+        ]
+    },
+    {
+        "name": "bird",
+        "pattern": [
+            false, true, false,
+            true, false, true,
+            true, false, true,
+            false, true, false            
+        ]
+    },
+    {
+        "name": "snake",
+        "pattern": [
+            true, false, false,
+            true, true, false,
+            false, true, true,
+            false, false, true
+        ]
+    }
+]

@@ -1,4 +1,5 @@
 import FileSystem from 'react-native-filesystem-v1';
+import { deepClone } from '../utils';
 
 let loading = {};
 
@@ -66,7 +67,7 @@ export default function Collection (path='', initData=[], autoSave=false) {
           });
         });
     }
-
+    
     return Promise.resolve(self.data);
   }
  
@@ -107,7 +108,7 @@ export default function Collection (path='', initData=[], autoSave=false) {
     itemWithId.id = Date.now();
     return this.getData()
       .then((data) => {
-        self.data = data.concat(itemWithId);
+        self.data = deepClone(data.concat(itemWithId));
         return this.save();
       })
       .then(() => itemWithId);
@@ -131,9 +132,8 @@ export default function Collection (path='', initData=[], autoSave=false) {
           });
         }
         const currentItem = data[currentItemIndex];
-        const mergedItem = Object.assign(currentItem, modifiedFields);
-        data[currentItemIndex] = mergedItem;
-        self.data = data;
+        data[currentItemIndex] = Object.assign({}, currentItem, modifiedFields);
+        self.data = deepClone(data);
         return this.save();
       });
   }

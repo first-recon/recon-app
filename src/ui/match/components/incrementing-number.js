@@ -25,7 +25,7 @@ function IncButton ({ style, label, clickHandler }) {
   );
 }
 
-export default function IncrementingNumber ({ key, value, increment, onIncrement }) {
+export default function IncrementingNumber ({ label, value, increment, onIncrement }) {
   const labelContainerStyle = {
     width: 30,
     borderColor: 'darkgrey',
@@ -43,12 +43,15 @@ export default function IncrementingNumber ({ key, value, increment, onIncrement
   };
 
   return (
-    <View key={key} style={style.incrementingNumber.container}>
-      <IncButton style={{ borderRightWidth: 0 }} label="+" clickHandler={() => onIncrement(1)}/>
-      <View style={labelContainerStyle}>
-        <Text style={labelStyle}>{value}</Text>
+    <View style={style.incrementingNumber.container}>
+      <Text style={{ flex: 1, fontSize: 16 }}>{label}</Text>
+      <View style={{ flexDirection: 'row', width: 80 }}>
+        <IncButton style={{ borderRightWidth: 0 }} label="+" clickHandler={() => onIncrement(1)}/>
+        <View style={labelContainerStyle}>
+          <Text style={labelStyle}>{value}</Text>
+        </View>
+        <IncButton style={{ borderLeftWidth: 0 }} label="-" clickHandler={() => onIncrement(-1)}/>
       </View>
-      <IncButton style={{ borderLeftWidth: 0 }} label="-" clickHandler={() => onIncrement(-1)}/>
     </View>
   );
 }

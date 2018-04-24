@@ -11,17 +11,20 @@ import {
   Alert
 } from 'react-native';
 import {
-  Category,
   TournamentDropdown,
   MatchNumberField,
   AllianceToggle,
-  Comments
+  Comments,
+  Cryptobox,
+  RelicZone,
+  TextCheck
 } from './components';
 import { refreshTeamList } from '../actions';
 import MatchService from '../../services/match-service';
 import TeamService from '../../services/team-service';
 import TournamentService from '../../services/tournament-service';
 import SettingsService from '../../services/settings-service';
+import { deepClone } from '../../utils';
 
 const matchService = new MatchService();
 const teamService = new TeamService();
@@ -30,6 +33,26 @@ const settingsService = new SettingsService();
 
 // TODO: figure out some way of having a real multiline text field so that we can get rid of this character limit
 const COMMENTS_FIELD_LIMIT = 130;
+
+const INITIAL_CRYPTOBOX_STATE = [
+  [null, null, null, null], // column L
+  [null, null, null, null], // column C
+  [null, null, null, null], // column R
+];
+
+function getNextBlock (current) {
+  if (!current) {
+    return { color: 'lightgrey', isAuto: false };
+  } else if (current.color === 'lightgrey' && !current.isAuto) {
+    return { color: 'brown', isAuto: false };
+  } else if (current.color === 'brown' && !current.isAuto) {
+    return { color: 'lightgrey', isAuto: true };
+  } else if (current.color === 'lightgrey' && current.isAuto) {
+    return { color: 'brown', isAuto: true };
+  }
+
+  return null;
+}
 
 export default class MatchAdd extends Component {
   static navigationOptions = ({ navigation }) => ({
@@ -40,9 +63,25 @@ export default class MatchAdd extends Component {
     super(props);
 
     this.state = {
-      ...matchService.getEmptyMatch(props.navigation.state.params.id),
+      team: props.navigation.state.params.team.number,
+      tournament: 0,
+      alliance: 'RED',
+      diceRoll: -1, // 0 = L, 1 = C, 2 = R
       tournamentOptions: [],
-      commentsHeight: 40
+      comments: '',
+      commentsHeight: 40,
+      allianceJewelOnPlatform: false,
+      robotInSafeZone: false,
+      robotBalanced: false,
+      cryptoboxes: [
+        INITIAL_CRYPTOBOX_STATE,
+        INITIAL_CRYPTOBOX_STATE
+      ],
+      relicZones: [
+        { facedown: 0, upright: 0 },
+        { facedown: 0, upright: 0 },
+        { facedown: 0, upright: 0 }
+      ]
     };
   }
 
@@ -56,73 +95,42 @@ export default class MatchAdd extends Component {
       });
   }
 
-  /**
-   * cat   - category to edit (Auto, Teleop, Endgame...)
-   * name  - name of rule to edit
-   * type  - type of rule (boolean, number, etc...)
-   * value - new value entered in ui
-   */
-  updateRule (cat, name, type, value) {
-    this.setState({
-      data: {
-        categories: this.state.data.categories.map((category) => {
+  updateBlockValue (boxIdx, colIdx, blockIdx) {
+    const cryptoboxes = deepClone(this.state.cryptoboxes);
+    cryptoboxes[boxIdx][colIdx][blockIdx] = getNextBlock(cryptoboxes[boxIdx][colIdx][blockIdx]);
+    this.setState({ cryptoboxes });
+  }
 
-          // this is the category containeing the rule we want to edit
-          if (category.name === cat.name) {
-            category.rules = category.rules.map((rule) => {
+  updateRelics (zoneIdx, isUpright, step) {
+    const updated = deepClone(this.state.relicZones);
+    if (isUpright) {
+      updated[zoneIdx].upright += step;
+    } else {
+      updated[zoneIdx].facedown += step;
+    }
 
-              // this is the rule we are editing
-              if (rule.name === name) {
+    const validations = updated.reduce((validations, { facedown, upright }) => {
+      return {
+        totalRelics: validations.totalRelics + facedown + upright,
+        noNegatives: !validations.noNegatives ? false : !(facedown < 0 || upright < 0)
+      };
+    }, {totalRelics: 0, noNegatives: true});
 
-                // depending on the type of rule this is, either map a boolean
-                // to a point value or just put the value into the current state
-                switch (type) {
-                  case 'boolean':
-                    rule.points = value ? rule.value : 0;
-                    break;
-                  case 'number':
-                    if (rule.increment) {
-
-                      /**
-                       * TODO: Passing in a positive number will increment by the
-                       * amount set for this rule in the gameConfig. Negative
-                       * will decrement. Should probably make this less awful
-                       * but nothing is coming to mind atm. Also the fact that
-                       * this page is so dynamic makes this a little more
-                       * interesting.
-                       */
-                      if (value > 0) {
-                        rule.points += rule.increment;
-                      } else if (value < 0) {
-                        if (rule.points > 0) {
-                          rule.points -= rule.increment;
-                        }
-                      }
-                    } else {
-                      rule.points = value;
-                    }
-                }
-              }
-
-              return rule;
-            });
-          }
-
-          return category;
-        })
-      }
-    });
+    if (validations.totalRelics < 5 && validations.noNegatives) {
+      this.setState({ relicZones: updated });
+    }
   }
 
   saveMatch () {
-    const matchToSave = this.state;
-    
-    matchToSave.tournamentOptions = undefined;
-    matchToSave.commentsheight = undefined;
 
-    matchToSave.team = this.props.navigation.state.params.team.number;
+    if (this.state.diceRoll === -1) {
+      Alert.alert('Coud not score match!', 'Please enter dice roll.');
+      return;
+    }
 
-    return matchService.create(matchToSave)
+    const scoredMatch = matchService.buildMatchScores(this.state);
+
+    matchService.create(scoredMatch)
       .then(() => {
         refreshTeamList();
         this.props.navigation.state.params.refresh();
@@ -132,16 +140,6 @@ export default class MatchAdd extends Component {
   }
 
   render () {
-
-    const categories = this.state.data.categories
-      .map((category, i) => (
-        <Category
-          match={this.state}
-          category={category}
-          key={i}
-          fieldUpdated={(name, type, value) => this.updateRule(category, name, type, value)}/>
-      ));
-
     return (
       <ScrollView style={{flex: 1, flexDirection: 'column', marginLeft: 10, marginRight: 10}}>
         <TournamentDropdown
@@ -150,7 +148,6 @@ export default class MatchAdd extends Component {
             {this.state.tournamentOptions}
         </TournamentDropdown>
         <MatchNumberField number={this.state.number} onChangeText={(value) => {
-  
           // FIXME: does not validate decimal points
           if (!isNaN(value)) {
             this.setState({
@@ -168,7 +165,49 @@ export default class MatchAdd extends Component {
             });
           }
         }}/>
-        {categories}
+        <TextCheck
+          label={'Alliance Jewel on Platform?'}
+          labelOn={'Yes'}
+          labelOff={'No'}
+          value={this.state.allianceJewelOnPlatform}
+          onToggle={() => this.setState({ allianceJewelOnPlatform: !this.state.allianceJewelOnPlatform })}
+        />
+        <TextCheck
+          label={'Robot Parked in Safe Zone?'}
+          labelOn={'Yes'}
+          labelOff={'No'}
+          value={this.state.robotInSafeZone}
+          onToggle={() => this.setState({ robotInSafeZone: !this.state.robotInSafeZone })}
+        />
+        <TextCheck
+          label={'Robot Balanced?'}
+          labelOn={'Yes'}
+          labelOff={'No'}
+          value={this.state.robotBalanced}
+          onToggle={() => this.setState({ robotBalanced: !this.state.robotBalanced })}
+        />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={{ flex: 2, fontSize: 16, marginRight: 5 }}>Dice Roll</Text>
+          <TextInput
+            style={{ flex: 7, fontSize: 16 }}
+            keyboardType="numeric"
+            placeholder="Enter dice roll..."
+            onChangeText={(val) => {
+              this.setState({ diceRoll: Number(val) });
+            }}
+          />
+        </View>
+        <View style={{ marginBottom: 15 }}>
+          <Text style={{ textAlign: 'center', fontSize: 22 }}>Cryptoboxes</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Cryptobox label={'1'} data={this.state.cryptoboxes[0]} updateBlockValue={(colIdx, blockIdx) => this.updateBlockValue(0, colIdx, blockIdx)}/>
+            <Cryptobox label={'2'} data={this.state.cryptoboxes[1]} updateBlockValue={(colIdx, blockIdx) => this.updateBlockValue(1, colIdx, blockIdx)}/>
+          </View>
+        </View>
+        <View>
+          <Text style={{ textAlign: 'center', fontSize: 22 }}>Relic Zones</Text>
+          <RelicZone zones={this.state.relicZones} onValueChange={this.updateRelics.bind(this)}/>
+        </View>
         <Button title="Save" onPress={this.saveMatch.bind(this)}/>
       </ScrollView>
     );

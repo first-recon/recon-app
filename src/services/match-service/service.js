@@ -1,5 +1,5 @@
 import DbClient from '../../db/client';
-import { empty } from './mapper';
+import { empty, buildMatchScores } from './mapper';
 
 const config = require('../../../config');
 
@@ -7,6 +7,7 @@ function MatchService () {
   const database = new DbClient();
   this.matches = database.matchCollection;
   this.getEmptyMatch = empty;
+  this.buildMatchScores = buildMatchScores;
 }
 
 MatchService.prototype.getAll = function () {
@@ -29,13 +30,17 @@ MatchService.prototype.get = function (params) {
 
 // TODO: consider reworking this horrible CRUD system
 MatchService.prototype.create = function (match) {
+  if (!match.number) {
+    return Promise.reject({ name: 'RequiredFieldError', message: 'Please provide a match number.' });
+  }
+
   return this.matches.add(match)
     .then((added) => {
       const matchToUpload = {
         id: added.id,
         team: added.team,
         matchId: added.matchId,
-        timeStamp: Date.now(), // TODO: save this timestamp at creation
+        timeStamp: added.id, // TODO: save this timestamp at creation
         alliance: added.alliance,
         data: JSON.stringify(added.data)
       };

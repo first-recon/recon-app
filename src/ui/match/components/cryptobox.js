@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { View, TouchableHighlight, Text } from 'react-native';
+import { View, TouchableHighlight, Text, Dimensions } from 'react-native';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const IS_PHONE = SCREEN_WIDTH < 500;
 
 const BLOCK_STATE = {
     EMPTY: 0,
@@ -9,41 +12,28 @@ const BLOCK_STATE = {
     BROWN_AUTO: 4
 };
 
-function getBlockColor(blockStateNum) {
-    switch (blockStateNum) {
-        case BLOCK_STATE.EMPTY:
-            return 'grey';
-        case BLOCK_STATE.GREY_AUTO:
-        case BLOCK_STATE.GREY:
-            return 'lightgrey';
-        case BLOCK_STATE.BROWN_AUTO:
-        case BLOCK_STATE.BROWN:
-            return 'brown';
-    }
-}
-
 function Block ({ colIdx, blockIdx, block, updateBlockValue }) {
     const displayAutoText = block && block.isAuto;
     const autoTextColor = block && block.color === 'brown' ? 'white' : 'grey';
     return (
         <TouchableHighlight style={{
-            height: 50,
-            width: 50,
+            flex: 1,
+            height: IS_PHONE ? 50 : 100,
             backgroundColor: block ? block.color : 'grey',
             borderWidth: 1,
             borderColor: 'darkgrey',
-            alignItems: 'center'
+            justifyContent: 'center'
         }} onPress={() => {
             updateBlockValue(colIdx, blockIdx);
         }}>
-            <Text style={{ textAlign: 'center', fontSize: 24, color: autoTextColor }}>{displayAutoText ? 'A' : ''}</Text>
+            <Text style={{ textAlign: 'center', fontSize: IS_PHONE ? 24 : 72, color: autoTextColor }}>{displayAutoText ? 'A' : ''}</Text>
         </TouchableHighlight>
     );
 }
 
 function Column ({ colIdx, blocks, updateBlockValue }) {
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             {blocks.map((block, i) => <Block key={i} colIdx={colIdx} blockIdx={i} block={block} updateBlockValue={updateBlockValue}/>)}
         </View>
     );
@@ -90,9 +80,9 @@ export default class Cryptobox extends Component {
     render () {
         const { label, data: columns, boxIdx, updateBlockValue } = this.props;
         return (
-            <View>
-                <Text style={{ textAlign: 'center' }}>{label}</Text>
-                <View style={{ backgroundColor: 'lightgrey', flexDirection: 'row' }}>
+            <View style={{ width: '47%' }}>
+                <Text style={{ height: 40, textAlign: 'center' }}>{label}</Text>
+                <View style={{ flex: 1, backgroundColor: 'lightgrey', flexDirection: 'row' }}>
                     {columns.map((blocks, i) => {
                         return <Column key={i} colIdx={i} blocks={blocks} updateBlockValue={updateBlockValue}/>;
                     })}

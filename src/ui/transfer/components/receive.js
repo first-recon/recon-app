@@ -9,7 +9,6 @@ import { createTeam, createMatch } from '../helpers';
 const matchService = new MatchService();
 const teamService = new TeamService();
 
-const gameConfig = require('../../../data/game-config');
 const { csvDelimiter } = require('../../../../config');
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -49,7 +48,7 @@ export default class Receive extends Component {
     const fields = e.data.split(csvDelimiter);
 
     // TODO: improve this way of checking what type of data this is
-    if (fields.length === 3 && !this.state.teamData.find(t => t === e.data)) {
+    if (fields.length === 4 && !this.state.teamData.find(t => t === e.data)) {
       this.setState({
         teamData: this.state.teamData.concat(e.data)
       });

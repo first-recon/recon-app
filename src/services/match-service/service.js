@@ -40,7 +40,7 @@ MatchService.prototype.create = function (match) {
         id: added.id,
         team: added.team,
         matchId: added.matchId,
-        timeStamp: Date.now(), // TODO: save this timestamp at creation
+        timeStamp: added.id, // TODO: save this timestamp at creation
         alliance: added.alliance,
         data: JSON.stringify(added.data)
       };

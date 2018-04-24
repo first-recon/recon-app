@@ -139,7 +139,7 @@ export function buildMatchScores (state) {
 
   const uprightRelics = state.relicZones.reduce((totalUpright, zone) => {
     return totalUpright + zone.upright;
-  }, 0)
+  }, 0);
 
   return {
     team: state.team,
@@ -149,7 +149,8 @@ export function buildMatchScores (state) {
     comments: state.comments,
     uploaded: false,
     data: {
-      rules: gameConfig.rules.map((rule) => {
+      rules: gameConfig.rules.map((r) => {
+        const rule = r;
 
         if (rule.name === 'Alliance-specific Jewel remaining on platform') {
           rule.points = state.allianceJewelOnPlatform ? rule.value : 0;
@@ -196,9 +197,8 @@ export function empty (team) {
     comments: '',
     uploaded: false,
     data: {
-      rules: gameConfig.rules.map((rule) => {
-        rule.points = 0;
-        return rule;
+      rules: gameConfig.rules.map((r) => {
+        return Object.assign({}, r, { points: 0 });
       })
     }
   }

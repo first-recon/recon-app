@@ -50,49 +50,52 @@ export default class MatchEdit extends Component {
   }
 
   updateRule (name, points) {
+    const newRules = this.state.data.rules.map((r) => {
+      let finalPoints = 0;
+
+      // this is the rule we are editing
+      if (rule.name === name) {
+
+        // depending on the type of rule this is, either map a boolean
+        // to a point value or just put the value into the current state
+        switch (rule.type) {
+          case 'boolean':
+            finalPoints = points ? rule.value : 0;
+            break;
+          case 'number':
+            if (rule.value) {
+
+              /**
+               * TODO: Passing in a positive number will increment by the
+               * amount set for this rule in the gameConfig. Negative
+               * will decrement. Should probably make this less awful
+               * but nothing is coming to mind atm. Also the fact that
+               * this page is so dynamic makes this a little more
+               * interesting.
+               */
+              if (points > 0) {
+                finalPoints += rule.value;
+              } else if (points < 0) {
+                finalPoints -= rule.value;
+              }
+            } else {
+              finalPoints = points;
+            }
+        }
+      }
+
+      return Object.assign({}, rule, { points: finalPoints });
+    });
+
     this.setState({
       data: {
-        rules: this.state.data.rules.map((rule) => {
-
-          // this is the rule we are editing
-          if (rule.name === name) {
-
-            // depending on the type of rule this is, either map a boolean
-            // to a point value or just put the value into the current state
-            switch (rule.type) {
-              case 'boolean':
-                rule.points = points ? rule.value : 0;
-                break;
-              case 'number':
-                if (rule.value) {
-
-                  /**
-                   * TODO: Passing in a positive number will increment by the
-                   * amount set for this rule in the gameConfig. Negative
-                   * will decrement. Should probably make this less awful
-                   * but nothing is coming to mind atm. Also the fact that
-                   * this page is so dynamic makes this a little more
-                   * interesting.
-                   */
-                  if (points > 0) {
-                    rule.points += rule.value;
-                  } else if (points < 0) {
-                    rule.points -= rule.value;
-                  }
-                } else {
-                  rule.points = points;
-                }
-            }
-          }
-
-          return rule;
-        })
+        rules: newRules
       }
     });
 
     matchService.update(this.state.id, {
       data: {
-        rules: this.state.data.rules
+        rules: newRules
       }
     })
     .catch((error) => {

@@ -128,6 +128,7 @@ export default class MatchAdd extends Component {
     }
 
     const scoredMatch = matchService.buildMatchScores(this.state);
+
     matchService.create(scoredMatch)
       .then(() => {
         refreshTeamList();

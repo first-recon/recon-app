@@ -1,27 +1,6 @@
-import assert from 'assert';
-import sinon from 'sinon';
-
 // i hate JS
 export function deepClone (object) {
   return JSON.parse(JSON.stringify(object));
-}
-
-export function assertProps (actual, expected, path='root.') {
-  const actualProps = Object.keys(actual).sort();
-  const expectedProps = Object.keys(expected).sort();
-
-  // doing 2 asserts here because if you are just missing a property this first
-  // assert is a bit clearer
-  assert.deepEqual(actualProps, expectedProps);
-  expectedProps.forEach((prop) => {
-    if (typeof expected[prop] === 'object') {
-
-      // if this is an object, step into it
-      assertProps(actual[prop], expected[prop], path + `${prop}.`);
-    } else {
-      assert(actual[prop] === expected[prop], `expected ${path + prop} === ${expected[prop]} NOT ${path + prop} === ${actual[prop]}`);
-    }
-  });
 }
 
 let teamCounter = 0;

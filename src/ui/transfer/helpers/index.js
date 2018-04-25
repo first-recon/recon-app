@@ -17,7 +17,6 @@ export function createTeam (fields) {
 }
 
 export function createMatch (fields) {
-  console.log(fields);
   return {
     team: fields[0],
     tournament: Number(fields[1]),

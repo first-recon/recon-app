@@ -10,8 +10,8 @@ function MatchService () {
   this.buildMatchScores = buildMatchScores;
 }
 
-MatchService.prototype.getAll = function () {
-  return this.matches.getAll();
+MatchService.prototype.getAll = function (hydrateResults=true) {
+  return this.matches.getAll(hydrateResults);
 };
 
 MatchService.prototype.get = function (params) {

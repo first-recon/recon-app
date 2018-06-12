@@ -132,10 +132,10 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
   }
 
   return {
-    getAll: (() => {
+    getAll: ((hydrateResults) => {
       return collection.getAll()
         .then((matches) => {
-          return Promise.all(matches.map(format))
+          return Promise.all(hydrateResults ? matches.map(format) : matches)
         });
     }).bind(collection),
 

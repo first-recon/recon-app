@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { View, Text, Button, Modal, Alert, ScrollView, TextInput } from 'react-native';
-import { TournamentPicker, TournamentEntry } from './components';
+import { View, Text, Button, Modal, ScrollView, TextInput } from 'react-native';
+import { TournamentEntry } from './components';
 
 import TournamentService from '../../services/tournament-service';
 import SettingsService from '../../services/settings-service';

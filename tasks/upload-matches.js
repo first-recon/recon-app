@@ -6,19 +6,23 @@ const matchService = new MatchService();
 
 export default function uploadMatches() {
     console.log('Beginning local match scan...');
-    matchService.getAll()
-        .then(ms => ms.filter(m => !m.uploaded))
+    matchService.getAll(false)
+        .then((ms) => {
+          return ms.filter(m => !m.uploaded);
+        })
         .then((localMatches) => {
-            console.log(`Found ${localMatches.length} to push to server...`);            
+            console.log(`Found ${localMatches.length} to push to server...`);          
             return Promise.all(localMatches.map((local) => {
                 fetch(config.apis.match.url, {
                     method: 'POST',
                     body: JSON.stringify({
-                        id: local.id,
+                        id: `${local.team}-${local.tournament}-${local.number}`,
                         team: local.team,
+                        tournament: local.tournament,
                         matchId: local.matchId,
                         timeStamp: local.id, // TODO: save this timestamp at creation
                         alliance: local.alliance,
+                        number: local.number,
                         data: JSON.stringify(local.data)
                     }),
                     headers: {
@@ -26,14 +30,14 @@ export default function uploadMatches() {
                       'Content-Type': 'application/json'
                     }
                   })
-                  .then(response => {
-                    if (response.status === 200) {
-                      matchService.update(local.id, Object.assign({}, local, { uploaded: true }));
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data.success) {
+                      return matchService.update(local.id, Object.assign({}, local, { uploaded: true }));
                     }
+                    return Promise.resolve();
                   })
-                  .catch((error) => {
-                    console.log(local.id, error);
-                  });
+                  .catch((error) => console.error(local.id, error));
             }));
         })
         .then(() => console.log('Finished uploading matches.'));

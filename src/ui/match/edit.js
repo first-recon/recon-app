@@ -50,7 +50,7 @@ export default class MatchEdit extends Component {
   }
 
   updateRule (name, points) {
-    const newRules = this.state.data.rules.map((r) => {
+    const newRules = this.state.data.rules.map((rule) => {
       let finalPoints = 0;
 
       // this is the rule we are editing

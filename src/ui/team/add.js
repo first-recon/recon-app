@@ -42,6 +42,7 @@ export default class TeamAdd extends Component {
         <Button title="Save" onPress={() => {
           teamService.create(this.state)
             .then((result) => {
+              console.log('ts create result', result);
               this.props.navigation.state.params.refresh();
               this.props.navigation.goBack();
             })

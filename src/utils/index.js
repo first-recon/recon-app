@@ -13,10 +13,10 @@ export function createTeam (number, isTop, matches, timesDead, avgScores) {
     isTop: isTop || Math.random() % 2 === 0,
     matches: matches || [],
     timesDead: timesDead || 0,
-    averageScores: avgScores || {
-      autonomous: 0,
+    stats: avgScores || {
+      auto: 0,
       teleop: 0,
-      endGame: 0,
+      endgame: 0,
       total: 0
     }
   };

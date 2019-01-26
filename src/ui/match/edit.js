@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { TextCheck, IncrementingNumber } from './components';
 import MatchService from '../../services/match-service';
+import { getRulesForPeriod } from '../../data/game-config';
 
 const matchService = new MatchService();
 
@@ -24,15 +25,14 @@ function Category ({ name, rules, updateRule }) {
               <IncrementingNumber
                 label={rule.name}
                 value={rule.points}
-                increment={rule.value}
-                onIncrement={(value) => updateRule(rule.name, value)}
+                onIncrement={(value) => updateRule(rule.code, value)}
               /> :
               <TextCheck
                 label={rule.name}
                 labelOn="Yes"
                 labelOff="No"
                 value={rule.points > 0}
-                onToggle={(value) => updateRule(rule.name, !rule.points)}
+                onToggle={() => updateRule(rule.code, !rule.points)}
               />}
           </View>
         );
@@ -45,74 +45,39 @@ export default class MatchEdit extends Component {
   constructor (props) {
     super(props);
     this.state = {
-      ...this.props.navigation.state.params
+      ...this.props.navigation.state.params.match
     };
   }
 
-  updateRule (name, points) {
-    const newRules = this.state.data.rules.map((r) => {
-      let finalPoints = 0;
-
-      // this is the rule we are editing
-      if (rule.name === name) {
-
-        // depending on the type of rule this is, either map a boolean
-        // to a point value or just put the value into the current state
-        switch (rule.type) {
-          case 'boolean':
-            finalPoints = points ? rule.value : 0;
-            break;
-          case 'number':
-            if (rule.value) {
-
-              /**
-               * TODO: Passing in a positive number will increment by the
-               * amount set for this rule in the gameConfig. Negative
-               * will decrement. Should probably make this less awful
-               * but nothing is coming to mind atm. Also the fact that
-               * this page is so dynamic makes this a little more
-               * interesting.
-               */
-              if (points > 0) {
-                finalPoints += rule.value;
-              } else if (points < 0) {
-                finalPoints -= rule.value;
-              }
-            } else {
-              finalPoints = points;
-            }
-        }
-      }
-
-      return Object.assign({}, rule, { points: finalPoints });
-    });
-
-    this.setState({
-      data: {
-        rules: newRules
-      }
-    });
-
+  updateRule(code, newValue) {
     matchService.update(this.state.id, {
+      ...this.state,
       data: {
-        rules: newRules
+        ...this.state.data,
+        [code]: newValue
       }
     })
-    .catch((error) => {
-      Alert.alert('Error updating match', error.message);
+    .then(updated => {
+      this.setState(state => ({
+        ...state,
+        ...updated
+      }));
+      this.props.navigation.state.params.refresh();
     });
   }
 
-  render () {
-    const rules = this.state.data.rules;
-    const autonomous = rules.filter(r => r.period === 'autonomous');
-    const teleop = rules.filter(r => r.period === 'teleop');
-    const endgame = rules.filter(r => r.period === 'endgame');
+  render() {
+
+    const pointsToRules = r => ({ ...r, points: this.state.data[r.code] });
+    const auto = getRulesForPeriod('autonomous').map(pointsToRules);
+    const teleop = getRulesForPeriod('teleop').map(pointsToRules);
+    const endgame = getRulesForPeriod('endgame').map(pointsToRules);
+
     return (
-      <ScrollView style={{flex: 1, padding: 10}}>
+      <ScrollView style={{ flex: 1, padding: 10 }}>
         <Category
           name={'Autonomous'}
-          rules={autonomous}
+          rules={auto}
           updateRule={this.updateRule.bind(this)}
         />
         <Category

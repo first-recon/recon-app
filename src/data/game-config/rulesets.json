@@ -1,0 +1,75 @@
+{
+    "rover-ruckus": [
+      {
+        "code": "auto_landing",
+        "period": "autonomous",
+        "name": "Landed",
+        "type": "boolean",
+        "value": 30
+      },
+      {
+        "code": "auto_sampling",
+        "period": "autonomous",
+        "name": "Sampled",
+        "type": "boolean",
+        "value": 25
+      },
+      {
+        "code": "auto_claiming",
+        "period": "autonomous",
+        "name": "Claimed Depot",
+        "type": "boolean",
+        "value": 15
+      },
+      {
+        "code": "auto_parking",
+        "period": "autonomous",
+        "name": "Parked",
+        "type": "boolean",
+        "value": 10
+      },
+      {
+        "code": "tele_gold_mineral",
+        "period": "teleop",
+        "name": "Gold Minerals in Gold Cargo Hold",
+        "type": "number",
+        "value": 5
+      },
+      {
+        "code": "tele_silver_mineral",
+        "period": "teleop",
+        "name": "Silver Minerals in Silver Cargo Hold",
+        "type": "number",
+        "value": 5
+      },
+      {
+        "code": "tele_mineral_depot",
+        "period": "teleop",
+        "name": "Minerals in Depot",
+        "type": "number",
+        "value": 2
+      },
+      {
+        "code": "end_latched",
+        "period": "endgame",
+        "name": "Robot Latched",
+        "type": "boolean",
+        "value": 50
+      },
+      {
+        "code": "end_parked",
+        "period": "endgame",
+        "name": "Robot Parked",
+        "type": "boolean",
+        "value": 15
+      },
+      {
+        "code": "end_parked_fully",
+        "period": "endgame",
+        "name": "Robot Fully Parked in Crater",
+        "type": "boolean",
+        "value": 10
+      }
+    ]
+}
+  

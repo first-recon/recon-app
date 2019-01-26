@@ -1,16 +1,10 @@
 import React, { Component } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 
-import MatchService from '../../services/match-service';
-
-const matchService = new MatchService();
+import { getRuleset } from '../../data/game-config';
 
 function getMatchTitle (match) {
   return `${match.team.name} #${match.number}`;
-}
-
-function getTotalScore ({ data: { rules } }) {
-  return rules.reduce((cScore, { points }) => (cScore + points), 0);
 }
 
 const STANDARD_TEXT_SIZE = 18;
@@ -38,17 +32,32 @@ export default class MatchDetail extends Component {
 
   render () {
     const match = this.props.navigation.state.params;
-    const autonomous = match.data.rules.filter(r => r.period === 'autonomous');
-    const teleop = match.data.rules.filter(r => r.period === 'teleop');
-    const endgame = match.data.rules.filter(r => r.period === 'endgame');
+
+    const rules = getRuleset();
+
+    const hydrateRulesWithPoints = (period) => {
+      return rules
+        .filter(r => r.period === period)
+        .map(r => {
+          return {
+            ...r,
+            points: match.scores[r.code]
+          }
+        });
+    };
+
+    const autoRules = hydrateRulesWithPoints('autonomous');
+    const teleopRules = hydrateRulesWithPoints('teleop');
+    const endgameRules = hydrateRulesWithPoints('endgame');
+
     return (
       <ScrollView>
         <View style={{ marginLeft: 10, marginRight: 10 }}>
-          <Text style={{ fontSize: STANDARD_TEXT_SIZE + 10 }}>{`Total: ${getTotalScore(match)}`}</Text>
+          <Text style={{ fontSize: STANDARD_TEXT_SIZE + 10 }}>{`Total: ${match.scores.stats.total}`}</Text>
           <View>
-            <DetailCategory name="Autonomous" rules={autonomous}/>
-            <DetailCategory name="TeleOp" rules={teleop}/>
-            <DetailCategory name="End Game" rules={endgame}/>
+            <DetailCategory name="Autonomous" rules={autoRules}/>
+            <DetailCategory name="TeleOp" rules={teleopRules}/>
+            <DetailCategory name="End Game" rules={endgameRules}/>
           </View>
           <View>
             <Text style={{ fontSize: STANDARD_TEXT_SIZE, fontWeight: 'bold' }}>{'Comments'}</Text>

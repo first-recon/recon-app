@@ -1,19 +1,14 @@
 import React, { Component } from 'react';
 import {
   Text,
-  FlatList,
   View,
   Button,
   TouchableOpacity,
   Alert,
   ScrollView
 } from 'react-native';
-import TournamentService from '../../services/tournament-service';
-import TeamService from '../../services/team-service/service';
 import MatchService from '../../services/match-service';
 
-const tourneyService = new TournamentService();
-const teamService = new TeamService();
 const matchService = new MatchService();
 
 function Tourney ({ tournament }) {
@@ -21,7 +16,8 @@ function Tourney ({ tournament }) {
     borderBottomWidth: 1,
     borderBottomColor: 'lightgray',
     height: 50,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingLeft: 5
   };
 
   return (
@@ -36,20 +32,39 @@ function Match ({ match, detailClicked, editClicked }) {
   // TODO: move into seperate style file
   const style = {
     borderBottomWidth: 1,
-    borderBottomColor: 'lightgray',
+    borderColor: 'lightgray',
     height: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row'
+    backgroundColor: 'black'
   };
 
   return (
     <View style={style}>
-      <TouchableOpacity style={{ flex: 1, justifyContent: 'center', flexDirection: 'row', marginLeft: 10 }} onPress={() => detailClicked()}>
-        <Text style={{ flex: 1, textAlign: 'left', fontSize: 36 }}>{`Match ${match.number}`}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={{ height: 45, alignItems: 'center', justifyContent: 'center' }} onPress={() => editClicked()}>
-        <Text style={{ paddingLeft: 10, paddingRight: 10, textAlign: 'center', color: 'white', fontSize: 36, backgroundColor: '#4286f4' }}>{'Edit'}</Text>
+      <TouchableOpacity style={{ flex: 1, flexDirection: 'row', backgroundColor: 'white', padding: 10 }} activeOpacity={0.5} onPress={() => detailClicked()}>
+        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+          <Text style={{ flex: 1, textAlign: 'left', fontSize: 36, color: 'darkgrey' }}>Q<Text style={{ color: 'black' }}>{match.number}</Text></Text>
+        </View>
+        <View style={{ flex: 2 }}>
+          <Text style={{ fontSize: 18, textAlign: 'right' }}>
+            <Text style={{ fontSize: 14, color: 'black' }}>
+              {match.scores.stats.autonomous.total}
+              <Text style={{ color: 'darkgrey' }}>A  </Text>
+            </Text>
+            <Text style={{ fontSize: 14, color: 'black' }}>
+              {match.scores.stats.teleop.total}
+              <Text style={{ color: 'darkgrey' }}>T  </Text>
+            </Text>
+            
+            <Text style={{ fontSize: 14, color: 'black' }}>
+              {match.scores.stats.endgame.total}
+              <Text style={{ color: 'darkgrey' }}>E  </Text>
+            </Text>
+          </Text>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ flex: 1 }}/>
+            <Text style={{ textAlign: 'right', fontSize: 22, color: 'darkgrey', marginRight: 10 }}>{'Total'}</Text>
+            <Text style={{ textAlign: 'right', fontSize: 22, color: 'black' }}>{`${match.scores.stats.total}`}</Text>
+          </View>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -62,6 +77,9 @@ export default class MatchList extends Component {
     this.state = {
       renderedMatchList: []
     };
+
+    matchService.addListener('create', () => this.refresh());
+    matchService.addListener('update', () => this.refresh());
   }
 
   componentWillMount () {
@@ -69,7 +87,7 @@ export default class MatchList extends Component {
   }
 
   refresh () {
-    matchService.get({ team: this.props.team.number })
+    matchService.get({ team: this.props.team.number })                    
       .then((matches) => {
         let lastTId;
         this.setState({
@@ -78,7 +96,7 @@ export default class MatchList extends Component {
                                     key={match.id}
                                     match={match}
                                     detailClicked={() => this.props.navigation.navigate('MatchDetailScreen', match)}
-                                    editClicked={() => this.props.navigation.navigate('MatchEditScreen', match)}/>;
+                                    editClicked={() => this.props.navigation.navigate('MatchEditScreen', { match, refresh: this.refresh.bind(this) })}/>;
 
             // insert new tourney name
             if (lastTId !== match.tournament.id) {
@@ -97,7 +115,6 @@ export default class MatchList extends Component {
   render () {
     return (
       <View style={{ flex: 1 }}>
-        <Button title="Add Match" onPress={() => {this.props.navigation.navigate('MatchAddScreen', { team: this.props.team, refresh: this.refresh.bind(this) })}}/>
         <ScrollView>
           {this.state.renderedMatchList}
         </ScrollView>

@@ -3,8 +3,7 @@ import { View, Text, Alert, Dimensions, Vibration } from 'react-native';
 import Camera from 'react-native-camera';
 import MatchService from '../../../services/match-service';
 import TeamService from '../../../services/team-service';
-import { refreshTeamList } from '../../actions';
-import { createTeam, createMatch } from '../helpers';
+import { createTeam, createMatch, unpackQRCode } from '../helpers';
 
 const matchService = new MatchService();
 const teamService = new TeamService();
@@ -45,15 +44,15 @@ export default class Receive extends Component {
   }
 
   onBarCodeRead (e) {
-    const fields = e.data.split(csvDelimiter);
-
+    const typeChar = e.data[0];
+    const fields = e.data.slice(1, e.data.length).split(csvDelimiter);
     // TODO: improve this way of checking what type of data this is
-    if (fields.length === 4 && !this.state.teamData.find(t => t === e.data)) {
+    if (typeChar === 'T' && !this.state.teamData.find(t => t === e.data)) {
       this.setState({
         teamData: this.state.teamData.concat(e.data)
       });
       this.saveTeam(fields);
-    } else if (!this.state.matchData.find(m => e.data === m)) {
+    } else if (typeChar === 'M' && !this.state.matchData.find(m => e.data === m)) {
       this.setState({
         matchData: this.state.matchData.concat(e.data)
       });
@@ -66,7 +65,6 @@ export default class Receive extends Component {
     teamService.create(team)
       .then(() => {
         Vibration.vibrate();
-        refreshTeamList();
       })
       .catch(error => console.log('ERROR:', error));
   }
@@ -76,7 +74,6 @@ export default class Receive extends Component {
     matchService.create(match)
       .then(() => {
         Vibration.vibrate();
-        refreshTeamList();
       })
       .catch(error => console.log('ERROR:', error));
   }

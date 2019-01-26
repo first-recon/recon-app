@@ -1,8 +1,7 @@
 import Collection from './collection';
 
 import TeamModel from './models/team';
-
-const gameConfig = require('../data/game-config');
+import MatchModel from './models/match';
 
 const config = require('../../config');
 
@@ -15,9 +14,10 @@ let instance;
  */
 function Client () {
   if (!instance) {
-    const newMatchCollection = new Collection('matches.json', []);
-    const newTeamCollection = new Collection('teams.json', []);
+    const newMatchCollection = new Collection('matches.json', [], false, MatchModel);
+    const newTeamCollection = new Collection('teams.json', [], false, TeamModel);
     const tournamentCollection = new Collection('tournaments.json', config.apis.event.url);
+    // const tournamentCollection = new Collection('tournaments.json', require('../data/tournaments'));
     const settingsCollection = new Collection('settings.json', require('../data/settings'));
 
     instance = {
@@ -58,10 +58,10 @@ function setupTeamCollection (collection, matchCollection) {
     find: ((findMethod) => {
       return collection.find(findMethod)
         .then((team) => {
-          const teamWithMatches = Object.assign({ matches: [] }, team);
+          const teamWithMatches = { ...team, matches: [] };
           return team ?
             matchCollection.filter((m) => m.team === teamWithMatches.number)
-              .then((matches) => Object.assign({ matches }, teamWithMatches))
+              .then((matches) => ({ ...team, matches }))
             : Promise.resolve(null);
         });
     }).bind(collection),
@@ -123,7 +123,8 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
         alliance: match.alliance,
         comments: match.comments,
         uploaded: match.uploaded,
-        data: match.data
+        data: match.data,
+        scores: match.scores
       };
     })
     .catch((error) => {
@@ -162,7 +163,7 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
             return Promise.reject({ name: 'DbAddOpError', message: 'Match already exists.' });
           }
 
-          return collection.add(Object.assign(match, { matchId: `${match.tournament}-${match.number}` }));
+          return collection.add(match);
         });
     }).bind(collection),
 

@@ -25,4 +25,12 @@ TournamentService.prototype.delete = function (number) {
   return this.tournaments.remove(this.getByNumber(number).id);
 };
 
+TournamentService.prototype.delete = function (number) {
+  return this.tournaments.remove(this.getByNumber(number).id);
+};
+
+TournamentService.prototype.deleteAll = function () {
+  return this.tournaments.clear();
+};
+
 export default TournamentService;

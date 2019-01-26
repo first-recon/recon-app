@@ -1,37 +1,75 @@
 import GenericModel from './generic';
-const gameConfig = require('../../data/game-config'); // TODO: dep inject this
+import * as Validators from './validators';
 const { csvDelimiter } = require('../../../config');
+import config from '../../../config';
 
-function Match (m, config=gameConfig) {
+function validateMatch ({
+  team,
+  tournament,
+  number,
+  matchId,
+  alliance,
+  comments,
+  uploaded,
+  data,
+  scores
+}) {
+
+  Validators.shouldNotBeUndefinedOrNull('tournament', tournament);
+  Validators.shouldNotBeUndefinedOrNull('number', number);
+
+  Validators.shouldExist('team', team);
+  Validators.shouldExist('matchId', matchId);
+  Validators.shouldExist('alliance', alliance);
+  Validators.shouldExist('data', data);
+  Validators.shouldExist('scores', scores);
+
+  Validators.shouldBeString('comments', comments);
+
+  Validators.shouldBeBoolean('uploaded', uploaded);
+
+  Validators.shouldMatch('matchId', matchId, /\d+\-\d+/g);
+
+  Validators.shouldParseAsJson('data', data);
+  Validators.shouldParseAsJson('scores', scores);
+
+}
+
+function Match (m) {
   GenericModel.call(this);
 
+  const teamNum = typeof m.team === 'object' ? m.team.number : m.team;
+  const tournamentId = typeof m.tournament === 'object' ? m.tournament.id : m.tournament;
+
   this.data = {
-    team: typeof m.team === 'object' ? m.team.number : m.team,
-    tournament: typeof m.tournament === 'object' ? m.tournament.id : m.tournament,
+    id: m.id || Date.now(),
+    team: teamNum,
+    tournament: tournamentId,
     number: m.number,
-    matchId: m.matchId,
+    matchId: `${tournamentId}-${m.number}`,
     alliance: m.alliance,
     comments: m.comments,
     uploaded: m.uploaded || false,
-    data: {
-      rules: m.data.rules
-    }
+    game: config.game,
+    timestamp: Date.now(),
+    data: m.data,
+    scores: m.scores
   };
 
-  this.toCSV = () => {
+  validateMatch(this.data);
 
+  this.toCSV = () => {
     function getData (match) {
-      return Object.keys(match).map((key) => {
-        const value = match[key];
-        if (key === 'data') {
-          const t = match.data.rules.map(r => r.points).join(csvDelimiter);
-          return t;
-        } else if (key === 'comments') {
-          return value;
-        } else {
-          return value;
-        }
-      });
+      return Object.keys(match)
+        .filter(k => !Match.csvExclusions.find(ek => ek === k))
+        .map((key) => {
+          const value = match[key];
+          if (key === 'comments') {
+            return value;
+          } else {
+            return value;
+          }
+        });
     }
 
     return getData(this.data).join(csvDelimiter);
@@ -45,20 +83,24 @@ Match.schema = {
   matchId: '',
   alliance: '',
   comments: '',
-  data: gameConfig
+  data: '',
+  scores: ''
 };
 
-Match.getCSVHeaders = () => {
+Match.csvExclusions = [
+  'scores'
+];
 
+Match.getCSVHeaders = () => {
   function getHeaders (match) {
-    return Object.keys(match).map((key) => {
-      const childKey = Object.keys(match[key]);
-      if (key === 'data') {
-        return match.data.rules.map(r => r.name).join(csvDelimiter);
-      } else {
-        return key;
-      }
-    });
+    return Object.keys(match)
+      .map((key) => {
+        if (key === 'data') {
+          return Object.keys(match.data).map(r => r.name).join(csvDelimiter);
+        } else {
+          return key;
+        }
+      });
   }
 
   return getHeaders(Match.schema).join(csvDelimiter);

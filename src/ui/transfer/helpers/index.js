@@ -1,11 +1,13 @@
-const gameConfig = require('../../../data/game-config');
-
-export function genQRCode (csvMatchString, QRCode) {
+export function genQRCode (data, QRCode, type) {
   return new Promise((resolve, reject) => {
-    QRCode.toString(csvMatchString, { type: 'svg' }, (err, url) => {
+    QRCode.toString(type + data, { type: 'svg', errorCorrectionLevel: type === 'T' ? 'L' : 'H' }, (err, url) => {
       !err ? resolve(url) : reject(err);
     });
   });
+}
+
+export function unpackQRCode (qrString) {
+  return qrString;
 }
 
 export function createTeam (fields) {
@@ -18,18 +20,16 @@ export function createTeam (fields) {
 
 export function createMatch (fields) {
   return {
-    team: fields[0],
-    tournament: Number(fields[1]),
-    number: Number(fields[2]),
-    matchId: fields[3],
-    alliance: fields[4],
-    comments: fields[5],
-    uploaded: fields[6],
-    data: {
-      rules: gameConfig.rules.map((r, i) => {
-        const fieldIdx = 7 + i;
-        return Object.assign({}, r, { points: Number(fields[fieldIdx]) });
-      })
-    }
+    id: fields[0],
+    team: fields[1],
+    tournament: Number(fields[2]),
+    number: Number(fields[3]),
+    matchId: fields[4],
+    alliance: fields[5],
+    comments: fields[6],
+    uploaded: Boolean(fields[7]),
+    game: fields[8],
+    timestamp: fields[9],
+    data: JSON.parse(fields[10])
   };
 }

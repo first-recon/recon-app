@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {
   Text,
   Button,
-  Image,
   FlatList,
   View,
   Alert,
@@ -13,14 +12,12 @@ import {
 } from 'react-native';
 
 import TeamService from '../../services/team-service';
-import MatchService from '../../services/match-service';
-
-import { initRefreshTeamList } from '../actions';
 
 import globalStyle from '../global.style.js';
-import style from './list.style';
+import MatchService from '../../services/match-service';
 
 const teamService = new TeamService();
+const matchService = new MatchService();
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const IS_PHONE = SCREEN_WIDTH < 500;
@@ -75,7 +72,7 @@ function Team ({ index, team, clickHandler }) {
 
   return (
     <View style={{ marginRight: isLastTile ? 0 : TILE_MARGIN }}>
-      <TouchableHighlight style={{ borderRadius: IS_PHONE ? 60 : 0 }} onPress={() => clickHandler()}>
+      <TouchableHighlight onPress={() => clickHandler()}>
         <View style={teamStyle}>
           <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
             <Text style={teamNumberStyle}>{team.number}</Text>
@@ -83,10 +80,10 @@ function Team ({ index, team, clickHandler }) {
           </View>
           <Text numberOfLines={1} style={teamNameStyle}>{team.name}</Text>
           <View style={{ borderTopWidth: 1, borderTopColor: 'darkgrey', marginTop: 5, paddingTop: 2 }}>
-            <DataRow label={'Auto'} data={team.averageScores.autonomous}/>
-            <DataRow label={'Teleop'} data={team.averageScores.teleop}/>
-            <DataRow label={'End Game'} data={team.averageScores.endGame}/>
-            <DataRow label={'Total'} data={team.averageScores.total}/>
+            <DataRow label={'Auto'} data={team.stats.auto}/>
+            <DataRow label={'Teleop'} data={team.stats.teleop}/>
+            <DataRow label={'End Game'} data={team.stats.endgame}/>
+            <DataRow label={'Total'} data={team.stats.total}/>
             <DataRow label={'Times Dead'} data={team.timesDead}/>
           </View>
         </View>
@@ -105,7 +102,6 @@ function SortPicker ({ selectedValue, onValueChange }) {
 
 function createSections (sections, team, i, clickHandler) {
   const lastSection = sections[sections.length - 1];
-
   const renderedTeam = <Team key={i} index={i} team={team} clickHandler={clickHandler}/>;
 
   // every other team should be attached to the already created section
@@ -147,12 +143,42 @@ export default class TeamList extends Component {
       sort: SORT_OPTIONS.TOTAL
     };
 
-    // initialize action for refreshing team list
-    initRefreshTeamList(() => this.refresh());
+    teamService.addListener('update', (updated) => this.notifyTeamUpdated(updated));
+    teamService.addListener('create', (created) => this.notifyTeamCreated(created));
+    teamService.addListener('delete', (id) => this.notifyTeamDeleted(id));
+
+    matchService.addListener('create', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)));
+    matchService.addListener('update', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)));
   }
 
   componentWillMount () {
     this.refresh();
+  }
+
+  notifyTeamUpdated (updated) {
+    const updatedIndex = this.state.teams.findIndex(t => t.number === updated.number);
+    const updatedTeams = this.state.teams;
+    updatedTeams[updatedIndex] = updated;
+    this.setState(state => ({
+      ...state,
+      teams: updatedTeams
+    }));
+  }
+
+  notifyTeamCreated (team) {
+    const updatedTeams = this.state.teams;
+    updatedTeams.push(team);
+    this.setState(state => ({
+      ...state,
+      teams: updatedTeams
+    }));
+  }
+
+  notifyTeamDeleted (id) {
+    this.setState(state => ({
+      ...state,
+      teams: this.state.teams.filter(t => t.id !== id)
+    }));
   }
 
   refresh () {
@@ -165,18 +191,17 @@ export default class TeamList extends Component {
       .catch((error) => Alert.alert('Error :-(', error.message));
   }
 
-
-
   render () {
 
     // apply filter
-    const filtered = this.state.teams.filter((t) => t.number.includes(this.state.filter));
+    const filtered = this.state.teams.filter(t =>
+      t.number.includes(this.state.filter));
 
     // sort
-    filtered.sort(({ averageScores: a }, { averageScores: b }) => {
+    filtered.sort(({ stats: a }, { stats: b }) => {
       switch (this.state.sort) {
         case SORT_OPTIONS.AUTONOMOUS:
-          return b.autonomous - a.autonomous;
+          return b.auto - a.auto;
         case SORT_OPTIONS.TELEOP:
           return b.teleop - a.teleop;
         case SORT_OPTIONS.ENDGAME:

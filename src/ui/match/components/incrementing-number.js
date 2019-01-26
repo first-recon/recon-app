@@ -25,7 +25,7 @@ function IncButton ({ style, label, clickHandler }) {
   );
 }
 
-export default function IncrementingNumber ({ label, value, increment, onIncrement }) {
+export default function IncrementingNumber ({ label, value, onIncrement }) {
   const labelContainerStyle = {
     width: 30,
     borderColor: 'darkgrey',

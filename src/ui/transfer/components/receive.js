@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { View, Text, Alert, Dimensions, Vibration } from 'react-native';
-import Camera from 'react-native-camera';
+import { RNCamera } from 'react-native-camera';
 import MatchService from '../../../services/match-service';
 import TeamService from '../../../services/team-service';
-import { createTeam, createMatch, unpackQRCode } from '../helpers';
+import { mapCSVToTeam, mapCSVToMatch } from '../helpers';
 
 const matchService = new MatchService();
 const teamService = new TeamService();
@@ -28,10 +28,9 @@ export default class Receive extends Component {
   render () {
     return (
       <View>
-        <Camera
+        <RNCamera
           style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
           onBarCodeRead={this.onBarCodeRead.bind(this)}
-          aspect={Camera.constants.Aspect.fill}
         />
         <Text>{'Teams'}</Text>
         <Text>{this.state.teamData.map(t => t.split('|')[2])}</Text>
@@ -61,7 +60,7 @@ export default class Receive extends Component {
   }
 
   saveTeam (fields) {
-    const team = createTeam(fields);
+    const team = mapCSVToTeam(fields);
     teamService.create(team)
       .then(() => {
         Vibration.vibrate();
@@ -70,7 +69,7 @@ export default class Receive extends Component {
   }
 
   saveMatch (fields) {
-    const match = createMatch(fields);
+    const match = mapCSVToMatch(fields);
     matchService.create(match)
       .then(() => {
         Vibration.vibrate();

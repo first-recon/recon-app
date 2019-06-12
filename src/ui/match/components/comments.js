@@ -1,11 +1,11 @@
 import React from 'react';
 import { TextInput } from 'react-native';
 
-export default function ({ textValue, onChangeText }) {
+export default function ({ style, textValue, onChangeText }) {
   return (
     <TextInput
-      style={{ height: 40 }}
-      multiline={true}
+      style={{ ...style, height: 40 }}
+      multiline={false}
       placeholder={'Comments...'}
       onChangeText={onChangeText}
       value={textValue}

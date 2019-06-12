@@ -5,21 +5,25 @@ let loading = {};
 
 /**
  * Starts up the database
- * @param  {string} path     path to data file
- * @param  {array}  initData array of objects to initialize with (if null will load current db from path)
+ * @param  {string}  path       path to data file
+ * @param  {array}   initDataOrRemoteUrl   array of objects to initialize with or url to send http request to
+ * @param  {object}  Model      model to assist with enforcing data consistency (optional)
+ * @param  {boolean} isReadOnly mark collection as readonly (will throw on attempts to modify)
  */
 export default function Collection(
   path = "",
-  initData = [],
-  autoSave = false,
-  Model
+  initDataOrRemoteUrl = [],
+  Model,
+  isReadOnly
 ) {
   if (!path.length) {
     throw new Error("Please provide a path for the database...");
   }
 
   const self = {
-    data: null
+    data: null,
+    isReadOnly: isReadOnly,
+    shouldRetryRemoteFetch: false
   };
 
   this.getData = () => {
@@ -32,13 +36,16 @@ export default function Collection(
     }
 
     // if our data object is not initialized, do so
-    if (!self.data) {
+    if (!self.data || self.shouldRetryRemoteFetch) {
       loading[path] = true;
-      console.log('getData', path, initData, typeof initData);
+      console.log('getData', path, initDataOrRemoteUrl, typeof initDataOrRemoteUrl);
 
       // try reading it off the disk
       return FileSystem.readFile(path, FileSystem.storage.extBackedUp)
         .then(rawText => {
+          if (self.shouldRetryRemoteFetch) {
+            throw new Error('re-trying fetch from server...');
+          }
           try {
             const d = JSON.parse(rawText);
 
@@ -64,17 +71,27 @@ export default function Collection(
 
         // if that fails, try loading from the server
         .catch(error => {
-          if (typeof initData === 'string') {
-            return fetch(initData)
+          if (typeof initDataOrRemoteUrl === 'string') {
+            return fetch(initDataOrRemoteUrl)
               .then(res => res.json())
               .then(({ results }) => {
                 self.data = results;
                 this.save(); // async but we don't care about waiting for it to finish
                 loading[path] = false;
+                self.shouldRetryRemoteFetch = false;
                 return self.data;
+              })
+
+              // failed to load from server
+              .catch(err => {
+                self.isReadOnly = true;
+                self.shouldRetryRemoteFetch = true;
+
+                self.data = [];
+                console.log('ERROR:', 'unable to communicate with server');
               });
           } else {
-            self.data = initData;
+            self.data = initDataOrRemoteUrl;
           }
 
           return this.save().then(() => {
@@ -118,12 +135,18 @@ export default function Collection(
     return this.getData()
       .then(data =>
         data
-        .filter(item => hasValues(params, item))
-        .map(item => Model ? new Model(item).data : item)
+          .filter(item => hasValues(params, item))
+          .map(item => Model ? new Model(item).data : item)
       );
   };
 
   this.add = item => {
+    if (self.isReadOnly) {
+      throw Error({
+        name: 'DbReadOnlyError',
+        message: 'This collection cannot be modified'
+      });
+    }
     // TODO: make a better id generator
     const itemWithId = item;
     itemWithId.id = Date.now();
@@ -141,6 +164,12 @@ export default function Collection(
   // updates the item with the provided id to have the fields with values in
   // modifiedFields. if an id field is included it will be deleted
   this.update = (id, modifiedFields) => {
+    if (self.isReadOnly) {
+      throw Error({
+        name: 'DbReadOnlyError',
+        message: 'This collection cannot be modified'
+      });
+    }
     const newObject = {
       ...(Model ? (new Model(modifiedFields)).data : modifiedFields),
       id
@@ -163,6 +192,12 @@ export default function Collection(
   };
 
   this.remove = id => {
+    if (self.isReadOnly) {
+      throw Error({
+        name: 'DbReadOnlyError',
+        message: 'This collection cannot be modified'
+      });
+    }
     return this.getData().then(data => {
       self.data = data.filter(item => item.id !== id);
       return this.save()
@@ -170,7 +205,13 @@ export default function Collection(
     });
   };
 
-  this.clear = () => {
+  this.clear = (force) => {
+    if (self.isReadOnly && !force) {
+      throw Error({
+        name: 'DbReadOnlyError',
+        message: 'This collection has been marked as read-only. You can pass force=true to force clear'
+      });
+    }
     self.data = [];
     return this.save();
   };

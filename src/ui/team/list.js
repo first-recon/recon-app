@@ -15,6 +15,7 @@ import TeamService from '../../services/team-service';
 
 import globalStyle from '../global.style.js';
 import MatchService from '../../services/match-service';
+import Service from '../../services/service';
 
 const teamService = new TeamService();
 const matchService = new MatchService();
@@ -102,7 +103,7 @@ function SortPicker ({ selectedValue, onValueChange }) {
 
 function createSections (sections, team, i, clickHandler) {
   const lastSection = sections[sections.length - 1];
-  const renderedTeam = <Team key={i} index={i} team={team} clickHandler={clickHandler}/>;
+  const renderedTeam = <Team key={team.id} index={i} team={team} clickHandler={clickHandler}/>;
 
   // every other team should be attached to the already created section
   if (lastSection && lastSection.teams.length < NUM_OF_TILES) {
@@ -143,16 +144,22 @@ export default class TeamList extends Component {
       sort: SORT_OPTIONS.TOTAL
     };
 
-    teamService.addListener('update', (updated) => this.notifyTeamUpdated(updated));
-    teamService.addListener('create', (created) => this.notifyTeamCreated(created));
-    teamService.addListener('delete', (id) => this.notifyTeamDeleted(id));
+    this.listenerIds = [
+      teamService.addListener('update', (updated) => this.notifyTeamUpdated(updated)),
+      teamService.addListener('create', (created) => this.notifyTeamCreated(created)),
+      teamService.addListener('delete', (id) => this.notifyTeamDeleted(id)),
+      matchService.addListener('create', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team))),
+      matchService.addListener('update', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)))
+    ];
 
-    matchService.addListener('create', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)));
-    matchService.addListener('update', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)));
   }
 
   componentWillMount () {
     this.refresh();
+  }
+
+  componentWillUnmount() {
+    this.listenerIds.forEach(Service.removeListener);
   }
 
   notifyTeamUpdated (updated) {
@@ -224,12 +231,12 @@ export default class TeamList extends Component {
         data={grouped}
         renderItem={({ index, item: section }) => {
           return (
-            <View key={index} style={{ flex: 1, flexDirection: 'row', marginBottom: TILE_MARGIN }}>
+            <View key={`${index}`} style={{ flex: 1, flexDirection: 'row', marginBottom: TILE_MARGIN }}>
               {section.teams}
             </View>
           );
         }}
-        keyExtractor={(item, index) => index}
+        keyExtractor={(item, index) => `${index}`}
       />
     );
 

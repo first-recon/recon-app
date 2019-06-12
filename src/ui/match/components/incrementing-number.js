@@ -3,49 +3,50 @@ import { View, Text, TouchableHighlight } from 'react-native'
 
 import style from './components.style'
 
-const HEIGHT = 40;
+const HEIGHT = 60;
 
-function IncButton ({ style, label, clickHandler }) {
-  const combinedStyle = {
-    ...style,
-    flex: 1,
-    width: 25,
-    height: HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderWidth: 0.5,
-    borderColor: 'darkgrey'
-  };
-
-  return (
-    <TouchableHighlight style={combinedStyle} onPress={clickHandler}>
-      <Text style={{ fontSize: 24, color: '#8c8c8c' }}>{label}</Text>
-    </TouchableHighlight>
-  );
-}
-
-export default function IncrementingNumber ({ label, value, onIncrement }) {
+export default function IncrementingNumber ({ label, value, onIncrement, backgroundColor, textColor }) {
   const labelContainerStyle = {
     width: 30,
-    borderColor: 'darkgrey',
-    borderTopWidth: 0.5,
-    borderBottomWidth: 0.5,
     height: HEIGHT,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white'
+    justifyContent: 'center'
   };
 
   const labelStyle = {
     fontSize: 20,
-    color: 'black'
+    color: textColor || 'black'
   };
 
+  function IncButton ({ style, label, clickHandler }) {
+    const combinedStyle = {
+      ...style,
+      flex: 1,
+      width: 50,
+      height: HEIGHT,
+      justifyContent: 'center',
+      alignItems: 'center'
+    };
+  
+    return (
+      <TouchableHighlight style={combinedStyle} onPress={clickHandler}>
+        <Text style={{ fontSize: 24, color: textColor }}>{label}</Text>
+      </TouchableHighlight>
+    );
+  }
+
   return (
-    <View style={style.incrementingNumber.container}>
-      <Text style={{ flex: 1, fontSize: 16 }}>{label}</Text>
-      <View style={{ flexDirection: 'row', width: 80 }}>
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 10,
+      borderColor: backgroundColor || 'darkgrey',
+      paddingLeft: 10,
+      borderWidth: 1,
+      backgroundColor
+    }}>
+      <Text style={{ flex: 1, fontSize: 20, color: textColor || '#4f4f4f' }}>{label}</Text>
+      <View style={{ flexDirection: 'row', width: 120 }}>
         <IncButton style={{ borderRightWidth: 0 }} label="+" clickHandler={() => onIncrement(1)}/>
         <View style={labelContainerStyle}>
           <Text style={labelStyle}>{value}</Text>

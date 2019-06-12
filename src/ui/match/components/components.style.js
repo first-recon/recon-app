@@ -3,7 +3,10 @@ export default {
     container: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 10
+      marginBottom: 10,
+      borderColor: 'darkgrey',
+      paddingLeft: 10,
+      borderWidth: 2
     }
   },
   ruleField: {

@@ -14,7 +14,7 @@ Service.prototype.addListener = function (that, method, cb) {
     return newListener.id;
 };
 
-Service.prototype.removeListener = function (id) {
+Service.removeListener = function (id) {
     const initialLength = listeners.length;
     listeners = listeners.filter(l => l.id !== id);
     return initialLength > listeners.length; // returns true if listener removed

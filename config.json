@@ -2,10 +2,10 @@
     "csvDelimiter": "|" ,
     "apis": {
         "event": {
-            "url": "http://167.99.234.64:30000/events"
+            "url": "http://10.0.2.2:3001"
         },
         "match": {
-            "url": "http://167.99.234.64:30000/matches"
+            "url": "http://10.0.2.2:3003"
         }
     },
     "scheduledTasks": {

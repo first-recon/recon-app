@@ -8,21 +8,21 @@
     "convert-to-text": "node scripts/convert-to-text",
     "build:android": "cd android && ./gradlew assembleDebug && npm run build:android:rename",
     "build:android:rename": "rm -rf build/ && mkdir build && cd build && mkdir android && cd .. && mv android/app/build/outputs/apk/app-debug.apk build/android/recon-app.apk",
-    "build:android:release": "cd android && ./gradlew assembleRelease"
+    "build:android:release": "cd android && ./gradlew assembleRelease",
+    "clear": "rm -rf $TMPDIR/react-native-packager-cache-* && rm -rf $TMPDIR/metro-bundler-cache-*"
   },
   "dependencies": {
     "qrcode": "1.2.0",
-    "react": "16.0.0",
-    "react-native": "0.50.4",
-    "react-native-camera": "https://github.com/lwansbrough/react-native-camera.git",
-    "react-native-filesystem-v1": "https://github.com/first-recon/react-native-filesystem-v1.git",
-    "react-native-svg": "6.0.1-rc.1",
+    "react": "16.8.3",
+    "react-native": "0.57.8",
+    "react-native-camera": "2.9.0",
+    "react-native-filesystem-v1": "git+https://github.com/first-recon/react-native-filesystem-v1.git",
+    "react-native-svg": "9.4.0",
     "react-native-svg-uri": "1.2.3",
     "react-navigation": "1.0.0-beta.21"
   },
   "devDependencies": {
-    "babel-preset-react-native": "4.0.0",
-    "react-test-renderer": "16.0.0"
+    "fsevents": "^2.0.7"
   },
   "jest": {
     "preset": "react-native"

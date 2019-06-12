@@ -1,43 +1,6 @@
 import Service from '../service';
 import DbClient from '../../db/client';
-import { getRuleset, getRulesetObj, getRulesForPeriod } from '../../data/game-config';
-
-function calcScoresFromData(data) {
-  // grab match data out of the data object we just got from the ui
-  const rules = getRulesetObj();
-  const ruleset = getRuleset();
-  const scores = {};
-
-  // TODO: can probably clean this up
-  for (r in rules) {
-    rules[r] = data[r];
-    const { value } = ruleset.find(rl => rl.code === r);
-    scores[r] = value * rules[r];
-  }
-
-  const getTotalFromRules = (period) => {
-    return getRulesForPeriod(period)
-      .reduce((runningTotal, { code }) => runningTotal + scores[code], 0);
-  };
-
-  return {
-    ...scores,
-    stats: {
-      total: getTotalFromRules(),
-      autonomous: {
-        total: getTotalFromRules('autonomous')
-      },
-      teleop: {
-        total: getTotalFromRules('teleop')
-      },
-      endgame: {
-        total: getTotalFromRules('endgame')
-      }
-    }
-  };
-}
-
-const listeners = [];
+import { GameConfig } from '../../../recon-lib';
 
 function MatchService () {
   const database = new DbClient();
@@ -79,7 +42,7 @@ MatchService.prototype.create = Service.registerEvent('create', function (match)
   return this.matches.add({
     ...match,
     data: JSON.stringify(match.data),
-    scores: JSON.stringify(calcScoresFromData(match.data))
+    scores: JSON.stringify(GameConfig.calcScoresFromData(match.data))
   });
 });
 
@@ -87,7 +50,7 @@ MatchService.prototype.update = function (id, match) {
   return this.matches.update(id, {
     ...match,
     data: JSON.stringify(match.data),
-    scores: JSON.stringify(calcScoresFromData(match.data))
+    scores: JSON.stringify(GameConfig.calcScoresFromData(match.data))
   })
   .then(updated => ({
     ...updated,
@@ -110,10 +73,6 @@ MatchService.prototype.getEventId = function () {
 
 MatchService.prototype.addListener = function (method, cb) {
   return Service.prototype.addListener(this, method, cb);
-};
-
-MatchService.prototype.removeListener = function (id) {
-  return Service.prototype.removeListener(this, id);
 };
 
 export default MatchService;

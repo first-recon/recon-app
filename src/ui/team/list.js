@@ -103,11 +103,7 @@ function SortPicker ({ selectedValue, onValueChange }) {
 
 function createSections (sections, team, i, clickHandler) {
   const lastSection = sections[sections.length - 1];
-<<<<<<< HEAD
-  const renderedTeam = <Team key={i} index={i} team={team} clickHandler={clickHandler}/>;
-=======
   const renderedTeam = <Team key={team.id} index={i} team={team} clickHandler={clickHandler}/>;
->>>>>>> fix-match-syncing
 
   // every other team should be attached to the already created section
   if (lastSection && lastSection.teams.length < NUM_OF_TILES) {
@@ -148,14 +144,6 @@ export default class TeamList extends Component {
       sort: SORT_OPTIONS.TOTAL
     };
 
-<<<<<<< HEAD
-    teamService.addListener('update', (updated) => this.notifyTeamUpdated(updated));
-    teamService.addListener('create', (created) => this.notifyTeamCreated(created));
-    teamService.addListener('delete', (id) => this.notifyTeamDeleted(id));
-
-    matchService.addListener('create', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)));
-    matchService.addListener('update', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)));
-=======
     this.listenerIds = [
       teamService.addListener('update', (updated) => this.notifyTeamUpdated(updated)),
       teamService.addListener('create', (created) => this.notifyTeamCreated(created)),
@@ -164,20 +152,16 @@ export default class TeamList extends Component {
       matchService.addListener('update', ({ team }) => teamService.getByNumber(team).then(team => this.notifyTeamUpdated(team)))
     ];
 
->>>>>>> fix-match-syncing
   }
 
   componentWillMount () {
     this.refresh();
   }
 
-<<<<<<< HEAD
-=======
   componentWillUnmount() {
     this.listenerIds.forEach(Service.removeListener);
   }
 
->>>>>>> fix-match-syncing
   notifyTeamUpdated (updated) {
     const updatedIndex = this.state.teams.findIndex(t => t.number === updated.number);
     const updatedTeams = this.state.teams;

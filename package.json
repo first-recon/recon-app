@@ -6,12 +6,8 @@
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "merge": "node scripts/merge-matches",
     "convert-to-text": "node scripts/convert-to-text",
-<<<<<<< HEAD
-    "build:android": "cd android && ./gradlew --no-daemon assembleDebug && npm run build:android:rename",
-=======
     "build:android": "cd android && ./gradlew assembleDebug && npm run build:android:rename",
     "clear": "rm -rf $TMPDIR/react-native-packager-cache-* && rm -rf $TMPDIR/metro-bundler-cache-*",
->>>>>>> fix-match-syncing
     "build:android:rename": "rm -rf build/ && mkdir build && cd build && mkdir android && cd .. && mv android/app/build/outputs/apk/app-debug.apk build/android/recon-app.apk",
     "build:android:release": "cd android && ./gradlew assembleRelease -x bundleReleaseJsAndAssets && npm run build:android:release:rename && npm run build:android:release:sign",
     "build:android:release:bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",

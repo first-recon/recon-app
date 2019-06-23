@@ -21,6 +21,7 @@ import MatchService from '../../services/match-service';
 import { genQRCode } from '../transfer/helpers';
 
 import globalStyle from '../global.style.js';
+import Service from '../../services/service';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -60,8 +61,34 @@ export default class TeamDetail extends Component {
     };
 
     // whenever teamService.update is called, we will request notification of that update
-    this.teamUpdateListenerId = teamService.addListener('update', () => this.refresh());
-    this.matchUpdateListenerId = matchService.addListener('create', () => this.refresh());
+    this.listenerIds = [
+      teamService.addListener('update', () => this.refresh()),
+      matchService.addListener('create', () => this.refresh())
+    ];
+  }
+
+  componentDidMount () {
+    const teamData = this.props.navigation.state.params;
+    const teamModel = new TeamModel(teamData);
+    Promise.all([
+      genQRCode(teamModel.toCSV(), QRCode, 'T'),
+      ...(teamData.matches
+        ? teamData.matches.map((match) => {
+            const matchModel = new MatchModel({
+              ...match,
+              data: JSON.stringify(match.data),
+              scores: JSON.stringify(match.scores)
+            });
+            return genQRCode(matchModel.toCSV(), QRCode, 'M');
+          })
+        : {})
+    ])
+    .then((qrCodes) => this.setState({ qrCodes }))
+    .catch((error) => Alert.alert('Error creating QR code', error.message));
+  }
+
+  componentWillUnmount() {
+    this.listenerIds.forEach(Service.removeListener);
   }
 
   refresh() {
@@ -74,28 +101,6 @@ export default class TeamDetail extends Component {
 
   toggleModal () {
     this.setState({ modalVisible: !this.state.modalVisible });
-  }
-
-  componentDidMount () {
-    const teamData = this.props.navigation.state.params;
-    const teamModel = new TeamModel(teamData);
-    Promise.all([
-      genQRCode(teamModel.toCSV(), QRCode, 'T'),
-      ...(teamData.matches ? teamData.matches.map((match) => {
-        const matchModel = new MatchModel({
-          ...match,
-          data: JSON.stringify(match.data),
-          scores: JSON.stringify(match.scores)
-        });
-        return genQRCode(matchModel.toCSV(), QRCode, 'M');
-      }) : {})
-    ])
-    .then((qrCodes) => this.setState({ qrCodes }))
-    .catch((error) => Alert.alert('Error creating QR code', error.message));
-  }
-
-  componentWillUnmount () {
-    teamService.removeListener(this.updateListenerId);
   }
 
   // TODO: break Modal into seperate component

@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import {
   Text,
   View,
-  Button,
   TouchableOpacity,
   Alert,
   ScrollView
 } from 'react-native';
 import MatchService from '../../services/match-service';
+import Service from '../../services/service';
 
 const matchService = new MatchService();
 
@@ -37,13 +37,27 @@ function Match ({ match, detailClicked, editClicked }) {
     backgroundColor: 'black'
   };
 
+  const TextColor = ({ children, color }) => <Text style={{ color }}>{children}</Text>;
+  const DarkGrey = ({ children }) => <TextColor color="darkgrey">{children}</TextColor>;
+  const Black = ({ children }) => <TextColor color="black">{children}</TextColor>;
+  const Red = ({ children }) => <TextColor color="red">{children}</TextColor>;
+  const Blue = ({ children }) => <TextColor color="blue">{children}</TextColor>;
+
   return (
     <View style={style}>
       <TouchableOpacity style={{ flex: 1, flexDirection: 'row', backgroundColor: 'white', padding: 10 }} activeOpacity={0.5} onPress={() => detailClicked()}>
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-          <Text style={{ flex: 1, textAlign: 'left', fontSize: 36, color: 'darkgrey' }}>Q<Text style={{ color: 'black' }}>{match.number}</Text></Text>
+          <Text style={{ flex: 1, textAlign: 'left', fontSize: 34 }}>
+            {match.type === 'FINAL'
+              ? <Text><DarkGrey>{match.level}</DarkGrey><Black>{match.levelNum}</Black> <DarkGrey>M</DarkGrey><Black>{match.number}</Black></Text>
+              : <Text><DarkGrey>Q</DarkGrey><Black>{match.number}</Black></Text>}
+          </Text>
         </View>
-        <View style={{ flex: 2 }}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          {match.alliance === 'RED' ? <Red>{match.alliance}</Red> : <Blue>{match.alliance}</Blue>}
+          <Text style={{ fontSize: 18 }}>{match.division}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
           <Text style={{ fontSize: 18, textAlign: 'right' }}>
             <Text style={{ fontSize: 14, color: 'black' }}>
               {match.scores.stats.autonomous.total}
@@ -78,12 +92,18 @@ export default class MatchList extends Component {
       renderedMatchList: []
     };
 
-    matchService.addListener('create', () => this.refresh());
-    matchService.addListener('update', () => this.refresh());
+    this.listenerIds = [
+      matchService.addListener('create', () => this.refresh()),
+      matchService.addListener('update', () => this.refresh())
+    ];
   }
 
   componentWillMount () {
     this.refresh();
+  }
+
+  componentWillUnmount() {
+    this.listenerIds.forEach(Service.removeListener);
   }
 
   refresh () {
@@ -109,7 +129,7 @@ export default class MatchList extends Component {
           }, [])
         });
       })
-      .catch((error) => Alert.alert('Error', error.message));
+      .catch((error) => Alert.alert('Error displaying matches', error.message));
   }
 
   render () {

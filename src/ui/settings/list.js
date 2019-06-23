@@ -4,9 +4,8 @@ import {
   Text,
   Alert,
   Modal,
-  ScrollView,
-  TextInput,
-  TouchableHighlight
+  FlatList,
+  TextInput
 } from "react-native";
 import { TournamentEntry } from "./components";
 import { FRButton } from '../components';
@@ -22,9 +21,11 @@ const matchService = new MatchService();
 const teamService = new TeamService();
 
 function deleteAllData() {
-  tournamentService.deleteAll();
-  matchService.deleteAll();
-  teamService.deleteAll();
+  Promise.all([
+    tournamentService.deleteAll(),
+    matchService.deleteAll(),
+    teamService.deleteAll()
+  ]).catch(({ name, message }) => Alert.alert(name, message));
 }
 
 const style = {
@@ -80,9 +81,17 @@ export default class SettingsList extends Component {
   }
 
   componentWillMount() {
-    Promise.all([tournamentService.getAll(), settingsService.getAll()]).then(
-      ([tournaments, settings]) => this.setState({ tournaments, settings })
-    );
+    Promise.all([
+      tournamentService.getAll(),
+      settingsService.getAll()
+    ])
+    .then(([tournaments, settings]) => {
+      tournaments.sort((t1, t2) => t2.season - t1.season);
+      this.setState({
+        tournaments: tournaments.map(t => ({ ...t, key: t.id.toString() })),
+        settings
+      })
+    });
   }
 
   updateSettings(settings) {
@@ -104,9 +113,6 @@ export default class SettingsList extends Component {
     const currentTournament = this.state.tournaments.find(
       t => t.id === this.state.settings.currentTournament
     );
-    const tournamentButtonText = currentTournament
-      ? currentTournament.name
-      : "Select Current Tournament";
 
     return (
       <View style={{ paddingLeft: 10, paddingRight: 10 }}>
@@ -136,24 +142,39 @@ export default class SettingsList extends Component {
           <TextInput
             onChangeText={val => this.setState({ tournamentFilterString: val })}
           />
-          <ScrollView>
-            {this.state.tournaments
-              .filter(t => t.name.toLowerCase().includes(this.state.tournamentFilterString.toLowerCase()))
-              .map(t => (
-                <TournamentEntry
-                  key={t.id}
-                  tournament={t}
-                  onPress={() => {
-                    this.updateSettings(
-                      Object.assign({}, this.state.settings, {
-                        currentTournament: t.id
-                      })
-                    );
-                    this.toggleTournamentModal();
-                  }}
-                />
-              ))}
-          </ScrollView>
+          <FlatList
+            data={
+              this.state.tournaments
+                .filter(t => t.name.toLowerCase().includes(this.state.tournamentFilterString.toLowerCase()))  
+            }
+            renderItem={({ item }) => {
+              return <TournamentEntry
+              tournament={item}
+              onPress={() => {
+                this.updateSettings(
+                  Object.assign({}, this.state.settings, {
+                    currentTournament: item.id
+                  })
+                );
+                this.toggleTournamentModal();
+              }}
+            />
+            }}
+          />
+        </Modal>
+        <Modal
+          style={style.deleteDataModal}
+          visible={this.state.deleteModalVisible}
+          onRequestClose={() => this.toggleDeleteModal()}
+        >
+          <View style={style.deleteButtonsContainer}>
+            <FRButton style={style.finalSaveButton} title={'Do nothing'} onPress={() => this.toggleDeleteModal()}/>
+            <FRButton style={style.finalDeleteButton} title={'DESTROY ALL THE THINGS!'} onPress={() => {
+              deleteAllData();
+              this.toggleDeleteModal();
+              Alert.alert('Warning!', 'Please restart the app to see updated data');
+            }}/>
+          </View>
         </Modal>
         <Modal
           style={style.deleteDataModal}

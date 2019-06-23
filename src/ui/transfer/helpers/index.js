@@ -10,7 +10,7 @@ export function unpackQRCode (qrString) {
   return qrString;
 }
 
-export function createTeam (fields) {
+export function mapCSVToTeam (fields) {
   return {
     id: Number(fields[0]),
     name: fields[1],
@@ -18,7 +18,7 @@ export function createTeam (fields) {
   };
 }
 
-export function createMatch (fields) {
+export function mapCSVToMatch (fields) {
   return {
     id: fields[0],
     team: fields[1],
@@ -30,6 +30,7 @@ export function createMatch (fields) {
     uploaded: Boolean(fields[7]),
     game: fields[8],
     timestamp: fields[9],
-    data: JSON.parse(fields[10])
+    data: JSON.parse(fields[10]),
+    isFinal: Boolean(fields[11])
   };
 }

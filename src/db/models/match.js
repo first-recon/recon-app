@@ -3,7 +3,12 @@ import * as Validators from './validators';
 const { csvDelimiter } = require('../../../config');
 import config from '../../../config';
 
+// const VALIDATE_MATCH_ID = /^\d+\-([D].[a-zA-Z]+\-)?([FQ])\-(\d+|[(QF)(SF)(FI)]{2}\d+.\d+)\-[RB]\-\d+$/;
+const VALIDATE_MATCH_ID = /^\d+\-([D].[a-zA-Z]+\-)?([FQ])\-(\d+|[(QF)(SF)(FI)]{2}\d+.\d+)/;
+const VALIDATE_FULL_ID = /^\d+\-([D].[a-zA-Z]+\-)?([FQ])\-(\d+|[(QF)(SF)(FI)]{2}\d+.\d+)\-([BR])\-\d+$/;
+
 function validateMatch ({
+  id,
   team,
   tournament,
   number,
@@ -12,27 +17,91 @@ function validateMatch ({
   comments,
   uploaded,
   data,
-  scores
+  scores,
+  type,
+  division,
+  level,
+  levelNum,
+  timestamp
 }) {
 
   Validators.shouldNotBeUndefinedOrNull('tournament', tournament);
-  Validators.shouldNotBeUndefinedOrNull('number', number);
+  Validators.shouldBeNumber('tournament', tournament);
+
+  Validators.shouldExist('number', number);
+  Validators.shouldBeNumber('number', number);
 
   Validators.shouldExist('team', team);
-  Validators.shouldExist('matchId', matchId);
-  Validators.shouldExist('alliance', alliance);
-  Validators.shouldExist('data', data);
-  Validators.shouldExist('scores', scores);
 
+  Validators.shouldExist('matchId', matchId);
+  Validators.shouldMatch('matchId', matchId, VALIDATE_MATCH_ID);
+
+  Validators.shouldExist('alliance', alliance);
+  Validators.shouldBeString('alliance', alliance);
+
+  Validators.shouldExist('data', data);
+  Validators.shouldBeString('data', data);
+  Validators.shouldParseAsJson('data', data);
+
+  Validators.shouldExist('scores', scores);
+  Validators.shouldBeString('scores', scores);
+  Validators.shouldParseAsJson('scores', scores);
+
+  Validators.shouldNotBeUndefinedOrNull('comments', comments);
   Validators.shouldBeString('comments', comments);
 
   Validators.shouldBeBoolean('uploaded', uploaded);
 
-  Validators.shouldMatch('matchId', matchId, /\d+\-\d+/g);
+  Validators.shouldExist('id', id);
+  Validators.shouldBeString('id', id);
+  Validators.shouldMatch('id', id, VALIDATE_FULL_ID);
 
-  Validators.shouldParseAsJson('data', data);
-  Validators.shouldParseAsJson('scores', scores);
+  Validators.shouldBeAnyOf('type', type, ['FINAL', 'QUAL']);
 
+  Validators.shouldNotBeUndefined('divison', division);
+  console.log('DIVISION', division);
+  if (typeof division === 'string') {
+    Validators.shouldBeString('division', division);
+    Validators.shouldHaveLength('division', division);
+  }
+
+  Validators.shouldBeAnyOf('level', level, ['QF', 'SF', 'FI', null]);
+  Validators.shouldBeNumber('levelNum', levelNum);
+
+  Validators.shouldExist('timestamp', timestamp);
+  Validators.shouldBeNumber('timestamp', timestamp);
+}
+
+// m.level is QF, SF or FI, quarterfinal, semifinal, or final
+// m.levelNum is the elim set number (semifinal 1, semifinal 2, etc..)
+// 456789-EDISON-QF1-M2
+function buildUniqueMatchIdentifier (m) {
+
+  const idArray = [];
+
+  idArray.push(buildMatchId(m));
+
+  idArray.push(m.alliance.charAt(0));
+
+  idArray.push(m.team);
+
+  return idArray.join('-');
+}
+
+function buildMatchId ({ tournament, division, type, level, levelNum, number }) {
+
+  const matchIdArray = [tournament];
+
+  // match id
+  if (division) {
+    matchIdArray.push('D.' + division);
+  }
+
+  matchIdArray.push(type.charAt(0));
+
+  matchIdArray.push(type === 'FINAL' ? `${level}${levelNum}.${number}` : number); // 45 for qual or SF2.2 for final
+
+  return matchIdArray.join('-');
 }
 
 function Match (m) {
@@ -42,18 +111,22 @@ function Match (m) {
   const tournamentId = typeof m.tournament === 'object' ? m.tournament.id : m.tournament;
 
   this.data = {
-    id: m.id || Date.now(),
-    team: teamNum,
-    tournament: tournamentId,
+    id: buildUniqueMatchIdentifier(m),
+    team: m.team,
+    tournament: m.tournament,
     number: m.number,
-    matchId: `${tournamentId}-${m.number}`,
+    matchId: buildMatchId(m),
     alliance: m.alliance,
     comments: m.comments,
     uploaded: m.uploaded || false,
     game: config.game,
-    timestamp: Date.now(),
+    timestamp: m.timestamp || Date.now(),
     data: m.data,
-    scores: m.scores
+    scores: m.scores,
+    type: m.type,
+    division: m.division,
+    level: m.level,
+    levelNum: m.levelNum
   };
 
   validateMatch(this.data);
@@ -76,34 +149,15 @@ function Match (m) {
   };
 }
 
-Match.schema = {
-  team: '',
-  tournament: 0,
-  number: 0,
-  matchId: '',
-  alliance: '',
-  comments: '',
-  data: '',
-  scores: ''
-};
-
 Match.csvExclusions = [
-  'scores'
+  'scores',
+  'type',
+  'matchId',
+  'tournament',
+  'team',
+  'number',
+  'alliance',
+  'divison'
 ];
-
-Match.getCSVHeaders = () => {
-  function getHeaders (match) {
-    return Object.keys(match)
-      .map((key) => {
-        if (key === 'data') {
-          return Object.keys(match.data).map(r => r.name).join(csvDelimiter);
-        } else {
-          return key;
-        }
-      });
-  }
-
-  return getHeaders(Match.schema).join(csvDelimiter);
-};
 
 export default Match;

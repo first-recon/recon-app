@@ -1,4 +1,4 @@
-const config = require('../../../config');
+const config = require('../config');
 const data = require('./rulesets');
 
 const gameRules = data[config.game];

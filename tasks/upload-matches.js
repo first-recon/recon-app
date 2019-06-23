@@ -16,11 +16,11 @@ export default function uploadMatches() {
           fetch(config.apis.match.url, {
             method: 'POST',
             body: JSON.stringify({
-              id: `${local.team}-${local.tournament}-${local.number}`,
+              id: local.id,
               team: local.team,
               tournament: local.tournament,
               matchId: local.matchId,
-              timeStamp: local.timestamp, // TODO: save this timestamp at creation
+              timeStamp: local.timestamp,
               alliance: local.alliance,
               number: local.number,
               data: JSON.stringify(local.data)
@@ -33,7 +33,6 @@ export default function uploadMatches() {
             .catch()
             .then(res => res.json())
             .then(data => {
-              console.log(data);
               if (data.success) {
                 return matchService.update(local.id, {
                   ...local,

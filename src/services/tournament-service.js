@@ -30,7 +30,7 @@ TournamentService.prototype.delete = function (number) {
 };
 
 TournamentService.prototype.deleteAll = function () {
-  return this.tournaments.clear();
+  return this.tournaments.clear(true);
 };
 
 export default TournamentService;

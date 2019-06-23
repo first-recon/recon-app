@@ -56,7 +56,6 @@ TeamService.prototype.get = function (params) {
 };
 
 TeamService.prototype.create = Service.registerEvent('create', function (team) {
-  console.log('lf team', team.number);
   return this.getByNumber(team.number)
     .then((foundTeam) => {
 
@@ -87,10 +86,6 @@ TeamService.prototype.getEventId = function () {
 
 TeamService.prototype.addListener = function (method, cb) {
   return Service.prototype.addListener(this, method, cb);
-};
-
-TeamService.prototype.removeListener = function (id) {
-  return Service.prototype.removeListener(this, id);
 };
 
 export default TeamService;

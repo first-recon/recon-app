@@ -14,9 +14,9 @@ let instance;
  */
 function Client () {
   if (!instance) {
-    const newMatchCollection = new Collection('matches.json', [], false, MatchModel);
-    const newTeamCollection = new Collection('teams.json', [], false, TeamModel);
-    const tournamentCollection = new Collection('tournaments.json', config.apis.event.url);
+    const newMatchCollection = new Collection('matches.json', [], MatchModel);
+    const newTeamCollection = new Collection('teams.json', [], TeamModel);
+    const tournamentCollection = new Collection('tournaments.json', config.apis.event.url, null, true);
     // const tournamentCollection = new Collection('tournaments.json', require('../data/tournaments'));
     const settingsCollection = new Collection('settings.json', require('../data/settings'));
 
@@ -113,18 +113,9 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
     ])
     .then(([tournament, team]) => {
       return {
-        id: match.id,
+        ...match,
         team: team,
-        tournament: tournament || { id: -1, name: 'Unknown' },
-        number: match.number,
-
-        // TODO: rename to code
-        matchId: match.matchId,
-        alliance: match.alliance,
-        comments: match.comments,
-        uploaded: match.uploaded,
-        data: match.data,
-        scores: match.scores
+        tournament: tournament || { id: -1, name: 'Unknown' }
       };
     })
     .catch((error) => {
@@ -157,9 +148,19 @@ function setupMatchCollection (collection, teamCollection, tournamentCollection)
         });
       }
 
-      return collection.filter({ team: match.team, tournament: match.tournament, number: match.number })
-        .then((matches) => {
-          if (matches.length) {
+      const buildMatchQuery = ({ tournament, team, division, number, alliance, level, levelNum }) => ({
+        tournament,
+        team,
+        division,
+        number,
+        alliance,
+        level,
+        levelNum
+      });
+
+      return collection.filter(buildMatchQuery(match))
+        .then(([existingMatch]) => {
+          if (existingMatch) {
             return Promise.reject({ name: 'DbAddOpError', message: 'Match already exists.' });
           }
 

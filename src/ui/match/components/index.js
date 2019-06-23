@@ -4,6 +4,7 @@ import AllianceToggle from './alliance-toggle';
 import Comments from './comments';
 import TextCheck from './text-check';
 import IncrementingNumber from './incrementing-number';
+import Toggle from './toggle';
 
 export {
   TournamentDropdown,
@@ -11,5 +12,6 @@ export {
   AllianceToggle,
   Comments,
   TextCheck,
-  IncrementingNumber
+  IncrementingNumber,
+  Toggle
 };

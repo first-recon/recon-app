@@ -2,10 +2,10 @@
     "csvDelimiter": "|" ,
     "apis": {
         "event": {
-            "url": "http://10.0.2.2:3001"
+            "url": "http://api.firstrecon.tech/events"
         },
         "match": {
-            "url": "http://10.0.2.2:3003"
+            "url": "http://api.firstrecon.tech/matches"
         }
     },
     "scheduledTasks": {

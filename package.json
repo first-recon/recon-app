@@ -7,9 +7,12 @@
     "merge": "node scripts/merge-matches",
     "convert-to-text": "node scripts/convert-to-text",
     "build:android": "cd android && ./gradlew assembleDebug && npm run build:android:rename",
+    "clear": "rm -rf $TMPDIR/react-native-packager-cache-* && rm -rf $TMPDIR/metro-bundler-cache-*",
     "build:android:rename": "rm -rf build/ && mkdir build && cd build && mkdir android && cd .. && mv android/app/build/outputs/apk/app-debug.apk build/android/recon-app.apk",
-    "build:android:release": "cd android && ./gradlew assembleRelease",
-    "clear": "rm -rf $TMPDIR/react-native-packager-cache-* && rm -rf $TMPDIR/metro-bundler-cache-*"
+    "build:android:release": "cd android && ./gradlew assembleRelease -x bundleReleaseJsAndAssets && npm run build:android:release:rename && npm run build:android:release:sign",
+    "build:android:release:bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "build:android:release:rename": "rm -rf build/ && mkdir build && cd build && mkdir android && cd .. && mv android/app/build/outputs/apk/release/app-release-unsigned.apk build/android/recon-app.apk",
+    "build:android:release:sign": "jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.keystore build/android/recon-app.apk alias_name"
   },
   "dependencies": {
     "qrcode": "1.2.0",
@@ -22,7 +25,9 @@
     "react-navigation": "1.0.0-beta.21"
   },
   "devDependencies": {
-    "fsevents": "^2.0.7"
+    "babel-core": "^6.26.3",
+    "fsevents": "^2.0.7",
+    "metro-react-native-babel-preset": "^0.54.1"
   },
   "jest": {
     "preset": "react-native"

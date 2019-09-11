@@ -33,4 +33,8 @@ TournamentService.prototype.deleteAll = function () {
   return this.tournaments.clear(true);
 };
 
+TournamentService.prototype.reload = function () {
+  return this.tournaments.reload();
+};
+
 export default TournamentService;

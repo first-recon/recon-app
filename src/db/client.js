@@ -19,12 +19,14 @@ function Client () {
     const tournamentCollection = new Collection('tournaments.json', config.apis.event.url, null, true);
     // const tournamentCollection = new Collection('tournaments.json', require('../data/tournaments'));
     const settingsCollection = new Collection('settings.json', require('../data/settings'));
+    const persistenceCollection = new Collection('persistence.json', require('../data/persistence'));
 
     instance = {
       matchCollection: setupMatchCollection(newMatchCollection, newTeamCollection, tournamentCollection),
       teamCollection: setupTeamCollection(newTeamCollection, newMatchCollection),
       tournamentCollection: tournamentCollection,
-      settingsCollection: settingsCollection
+      settingsCollection: settingsCollection,
+      persistenceCollection: persistenceCollection
     };
   }
 

@@ -17,8 +17,8 @@ export default class TeamAdd extends Component {
     super(props);
 
     this.state = {
-      name: 'Default name',
-      number: '5678'
+      name: '',
+      number: ''
     };
   }
 

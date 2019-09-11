@@ -2,10 +2,10 @@
     "csvDelimiter": "|" ,
     "apis": {
         "event": {
-            "url": "http://167.99.234.64:30000/events"
+            "url": "http://api.firstrecon.tech/events"
         },
         "match": {
-            "url": "http://167.99.234.64:30000/matches"
+            "url": "http://api.firstrecon.tech/matches"
         }
     },
     "scheduledTasks": {
@@ -14,6 +14,10 @@
         },
         "matchScoring": {
             "interval": 1000
+        },
+        "eventLoading": {
+            "interval": 10000,
+            "expireEvents": 3
         }
     },
     "game": "rover-ruckus",

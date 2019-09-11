@@ -14,17 +14,20 @@ import TournamentService from "../../services/tournament-service";
 import SettingsService from "../../services/settings-service";
 import MatchService from "../../services/match-service";
 import TeamService from "../../services/team-service";
+import PersistenceService from "../../services/persistence-service";
 
 const tournamentService = new TournamentService();
 const settingsService = new SettingsService();
 const matchService = new MatchService();
 const teamService = new TeamService();
+const persistService = new PersistenceService();
 
 function deleteAllData() {
   Promise.all([
     tournamentService.deleteAll(),
     matchService.deleteAll(),
-    teamService.deleteAll()
+    teamService.deleteAll(),
+    persistService.deleteAll()
   ]).catch(({ name, message }) => Alert.alert(name, message));
 }
 
